@@ -1,0 +1,67 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+.container-fluid {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.chat-box { border: 1px solid #ccc; margin-bottom: 10px; padding: 10px; height: 300px; overflow-y: scroll; }
+.message { margin-bottom: 15px; }
+.user-message { text-align: right; }
+.ai-message { text-align: left; }
+.row.flex-grow-1 {
+    flex-grow: 1;
+    display: flex;
+    margin: 0; /* Remove default row margins */
+}
+.col-md-4, .col-md-8 {
+    padding: 0; /* Remove default column paddings */
+    display: flex;
+    flex-direction: column;
+}
+.list-group {
+    overflow-y: auto;
+}
+.chat-box {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+}
+.form-control, .btn-primary {
+    border-radius: 0; /* Make the input and button edges square */
+}
+.spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: none; /* Initially hidden */
+}
+.input-group {
+    flex-wrap: nowrap; /* Prevent the input group from wrapping */
+}
+.form-control {
+    flex-grow: 1; /* Allow the text area to fill the space */
+    margin-bottom: 0; /* Remove margin */
+}
+#sendButton {
+    width: auto; /* Adjust width as needed */
+    flex-grow: 0; /* Prevent the button from growing */
+}
+.spinner-border {
+    margin-left: 10px; /* Add some space between the button and the spinner */
+}
+.margin-bottom-20{margin-bottom: 20px;}
+
+pre code {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    background-color: #f8f9fa; /* Adjust the color to your preference */
+    border: solid 1px #dcdcdc;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.copy-code-btn{margin-bottom: 30px;}
