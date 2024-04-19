@@ -132,9 +132,7 @@ $(document).ready(function() {
         window.location.href = '/chat?session_id=' + newSessionId;
     });
 
-// Event handler for the "Copy" button to copy the AI response without any HTML tags
-// Event handler for the "Copy" button to copy the entire AI response without button texts
-// Event handler for the "Copy" button to copy the entire AI response without "AI:" and button texts
+// Event handler for the "Copy" button to copy the entire AI response without "AI:" and button texts, HTML tags
 $(document).on('click', '.copy-btn', function() {
     // Clone the parent message element to work with a copy of the content
     var contentToCopy = $(this).closest('.message').clone();
