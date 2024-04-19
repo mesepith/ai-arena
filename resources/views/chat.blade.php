@@ -19,10 +19,10 @@
         <div class="col-md-4">
             <div class="model-selection">
                 <select id="modelSelection" class="form-control">
-                <option value="claude-3-opus-20240229">Cloude 3 Opus</option>
+                    <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
+                    <option value="claude-3-opus-20240229">Cloude 3 Opus</option>
                     <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
                     <option value="gpt-4">Open AI GPT-4</option>
-                    <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
                     <option value="claude-3-sonnet-20240229">Cloude 3 Sonnet</option>
                     <option value="claude-3-haiku-20240307">Cloude 3 Haiku</option>
                     <!-- Add other models as options here -->

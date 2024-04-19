@@ -64,17 +64,9 @@ class ChatController extends Controller
         $chatSessionId = $request->input('session_id');
 
         if( $chatSessionId !== session('chat_session_id')){ return response()->json(['success' => 0, 'message' => 'chat session is not matching']);}
-        
-        // echo 'chatSessionId : ' .$request->input('session_id') . "<br/>";  
-        // echo 'Str::uuid()->toString() : '. Str::uuid()->toString();
-        
 
         // Set the new or existing session_id in the session
         session(['chat_session_id' => $chatSessionId]);
-
-        // echo '<br/> chat_session_id: ';
-        // echo '<pre>'; print_r(session('chat_session_id'));
-        // exit;
 
         // Your existing code to handle the message and AI response
         $conversationHistory = Chat::where('chat_session_id', $chatSessionId)->get()->map(function ($chat) {
@@ -133,31 +125,6 @@ class ChatController extends Controller
         }
     }
 
-    private function formatAIResponse1($response)
-    {
-        // Handle explicitly marked code blocks with triple backticks
-        $response = preg_replace_callback('/```(.*?)\n(.*?)```/s', function ($matches) {
-            $languageIdentifier = trim($matches[1]);
-            $codeBlock = $matches[2];
-    
-            // Check if the first line is a language identifier and remove it
-            if (preg_match('/^\w+$/', $languageIdentifier)) {
-                return '<div><pre><code>' . htmlspecialchars($codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
-            } else {
-                // If it's not just a language identifier, include it back
-                return '<div><pre><code>' . htmlspecialchars($languageIdentifier . "\n" . $codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
-            }
-        }, $response);
-    
-        // Then, look for patterns that might indicate unmarked code (e.g., PHP tags)
-        $response = preg_replace_callback('/<\?(php)?(.*?)\?>/s', function ($matches) {
-            $codeBlock = trim($matches[2]);
-            return '<div><pre><code>' . htmlspecialchars($codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
-        }, $response);
-    
-        return $response;
-    }
-
     private function formatAIResponse($response)
 {
     // First, format explicitly marked code blocks
@@ -192,8 +159,6 @@ public function displayMarkdownAsHtml1(Request $request)
     $selectedSessionId = 'b07ea763-7ca6-4b62-bd96-c1a9d3a50c2b';
     $selectedSessionId = '57ccb51e-3f6e-4d77-8b26-09c10b04076a';
     $chats = Chat::where('chat_session_id', $selectedSessionId)->get();
-
-    // echo '<pre>'; print_r($chats[0]->ai_response); exit;
     
     // Simulating receiving the AI response as request input for demonstration
     $markdownText = $request->input('ai_response', $chats[0]->ai_response);
