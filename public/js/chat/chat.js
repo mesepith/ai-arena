@@ -27,8 +27,9 @@ $(document).ready(function() {
                 'Content-Type': 'application/json'
             },
             success: function(data) {
-                //appendMessage(data.ai_response, 'ai-message');
-                appendAIMessage(data.ai_response);
+                
+                appendMessage(data.ai_response, 'ai-message'); 
+
                 // Construct a meaningful title from the user's input and AI's response
                 var userSnippet = userInput.length > 30 ? userInput.substring(0, 30) + '...' : userInput;
                 var aiSnippet = data.ai_response.length > 30 ? data.ai_response.substring(0, 30) + '...' : data.ai_response;
@@ -86,77 +87,32 @@ $(document).ready(function() {
         $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
     }
 
- // Function to append AI messages with formatted code blocks and copy buttons
- function appendAIMessage(aiResponse) {
-    // Split the response into segments of code blocks and other content
-    let segments = aiResponse.split(/(```.*?```)/sg);
+    function appendMessage(message, className) {
+        // Create a new div element for the message
+        var messageElement = $('<div>').addClass('message ' + className);
+        
+        // Set the inner HTML of the message element based on whether it's an AI or user message
+        if (className === 'ai-message') {
+            messageElement.html('<strong>AI:</strong> ' + message);
+        } else {
+            messageElement.html('<strong>User:</strong> ' + message);
+        }
+        
+        // Append a copy button for the message, but set the data-message attribute only with the AI response
+        var copyBtn = $('<button>')
+            .addClass('copy-btn btn btn-sm btn-outline-secondary')
+            .attr('data-message', message) // Just the message, not the full HTML
+            .text('Copy');
+        
+        messageElement.append(copyBtn);
+        
+        // Append the new message element to the chat box div
+        $('#chatBox').append(messageElement);
+        
+        // Scroll to the bottom of the chat box to show the new message
+        $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+    }
     
-    // First, parse non-code segments as Markdown
-    let nonCodeSegments = segments.map((segment, index) => {
-        // Even indices will be non-code segments due to the way split works with capturing groups
-        if (index % 2 === 0) {
-            return marked.parse(segment);
-        } else {
-            return segment; // Leave code segments as-is for now
-        }
-    });
-
-    // Then, process each segment, applying formatAIResponse only to code blocks
-    let processedSegments = nonCodeSegments.map(segment => {
-        if (segment.startsWith("```") && segment.endsWith("```")) {
-            // Format code blocks now that non-code content has been parsed
-            return formatAIResponse(segment);
-        } else {
-            return segment; // Non-code segments have already been parsed
-        }
-    });
-
-    // Combine processed segments
-    let formattedMessage = processedSegments.join('');
-    // Decode HTML entities
-    formattedMessage = decodeHtmlEntities(formattedMessage);
-
-    // Create the message element and append it to the chat box
-    let messageElement = $('<div>').addClass('message ai-message').html('<strong>AI:</strong> ' + formattedMessage);
-    let copyBtn = $('<button>').addClass('copy-btn btn btn-sm btn-outline-secondary').text('Copy');
-    messageElement.append(copyBtn);
-    $('#chatBox').append(messageElement);
-    $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
-}
-
-
-
-function formatAIResponse(codeBlock) {
-    // Extract the actual code from the block, removing the triple backticks
-    var code = codeBlock.slice(3, -3); // Remove the triple backticks
-
-    // Decode HTML entities within the code block
-    code = code.replace(/&quot;/g, '"')
-               .replace(/&lt;/g, '<')
-               .replace(/&gt;/g, '>');
-
-    // Wrap the decoded code in <pre><code> tags for proper formatting
-    var codeHtml = '<pre><code>' + code.trim() + '</code></pre>';
-
-    // Add a "Copy Code" button
-    var copyCodeBtn = '<button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button>';
-
-    // Return the combined HTML for the code block and the "Copy Code" button
-    return codeHtml + copyCodeBtn;
-}
-
-function decodeHtmlEntities(text) {
-    var textArea = document.createElement('textarea');
-    textArea.innerHTML = text;
-    return textArea.value;
-}
-
-
-   // Utility function to escape HTML
-   function escapeHTML(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
-
     
 
     $('#newChatButton').click(function() {
@@ -176,12 +132,28 @@ function decodeHtmlEntities(text) {
         window.location.href = '/chat?session_id=' + newSessionId;
     });
 
- // Event handler for the "Copy" button to copy the entire AI response
- $(document).on('click', '.copy-btn', function() {
-    var message = $(this).parent().text();
-    copyToClipboard(message);
+// Event handler for the "Copy" button to copy the AI response without any HTML tags
+// Event handler for the "Copy" button to copy the entire AI response without button texts
+// Event handler for the "Copy" button to copy the entire AI response without "AI:" and button texts
+$(document).on('click', '.copy-btn', function() {
+    // Clone the parent message element to work with a copy of the content
+    var contentToCopy = $(this).closest('.message').clone();
+
+    // Remove the "AI:" label and any button elements from the cloned content
+    contentToCopy.find('strong').remove(); // This removes the "AI:" label
+    contentToCopy.find('button').remove(); // This removes the buttons
+
+    // Extract the text from the cleaned clone, which now excludes the "AI:" label and button texts
+    var textToCopy = contentToCopy.text();
+
+    // Use the extracted text for copying to the clipboard
+    copyToClipboard(textToCopy.trim()); // Trim for any leading/trailing whitespace
     showCopyConfirmation($(this));
 });
+
+
+
+
 // Event handler for the "Copy Code" button to copy code block content
 $(document).on('click', '.copy-code-btn', function() {
     var codeContent = $(this).prev('pre').find('code').text();

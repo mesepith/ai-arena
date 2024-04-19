@@ -82,7 +82,10 @@ class ChatController extends Controller
         $aiService = $this->getAIService($model);
         $responseBody = $aiService->generateResponse($conversationHistory, $model);
 
-        $aiResponse = $responseBody['ai_response'];
+        // $aiResponse = $responseBody['ai_response'];
+
+        // Extract and format the AI response
+        $aiResponse = $this->formatAIResponse($responseBody['ai_response']);
 
         // Extract token counts from the OpenAI response if available
         $promptTokens = $responseBody['prompt_tokens'];
@@ -108,8 +111,6 @@ class ChatController extends Controller
         $chat->total_tokens = $totalTokens;
 
         $chat->save();
-
-        $aiResponse = $this->formatAIResponse($aiResponse);
         
         // Return the AI response along with the session_id to ensure the frontend knows which session is active
         return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId]);
