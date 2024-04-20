@@ -138,3 +138,20 @@ html, body {
     outline: none;
     background-color: rgba(0,0,0,0.1);
 }
+
+/* Add styles for .chat-container */
+.col-md-9.chat-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Aligns children to the start and end */
+    height: 100%;
+}
+
+.chat-box {
+    flex-grow: 1; /* Makes chat box grow to fill available space */
+    /* Other styles remain the same */
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    padding: 10px;
+    overflow-y: auto; /* Changed from scroll to auto */
+}

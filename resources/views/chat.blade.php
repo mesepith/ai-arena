@@ -57,7 +57,7 @@
             <!-- New Chat Button -->
             <button id="newChatButton" class="btn btn-success mt-3">Start New Chat</button>
         </div>
-        <div class="col-md-9">
+        <div class="col-md-9 d-flex flex-column chat-container">
             <div class="chat-box" id="chatBox">
                 @foreach($chats as $chat)
                     <div class="message user-message">
