@@ -157,3 +157,13 @@ html, body {
     overflow-y: auto; /* Changed from scroll to auto */
 }
 .model-selection-prnt{margin-left: 15px;}
+
+pre code {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    background-color: #f8f9fa; /* Adjust the color to your preference */
+    border: solid 1px #dcdcdc;
+    border-radius: 4px;
+    font-family: monospace;
+}
