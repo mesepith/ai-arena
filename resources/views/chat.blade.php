@@ -32,7 +32,7 @@
     </div>
 
     <div class="row flex-grow-1">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="list-group">
                 @foreach($sessions as $session)
                     <a href="/chat?session_id={{ $session->chat_session_id }}" class="list-group-item list-group-item-action{{ $selectedSessionId == $session->chat_session_id ? ' active' : '' }}">
@@ -44,7 +44,7 @@
             <!-- New Chat Button -->
             <button id="newChatButton" class="btn btn-success mt-3">Start New Chat</button>
         </div>
-        <div class="col-md-8 d-flex flex-column">
+        <div class="col-md-9 d-flex flex-column">
         <div class="chat-box" id="chatBox">
             @foreach($chats as $chat)
                 <div class="message user-message">
