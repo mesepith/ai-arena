@@ -194,4 +194,12 @@ function generateUUID() { // Public Domain/MIT
     });
 }
 
+// Scroll the chat to the bottom on initial page load.
+scrollToBottom();
+
+function scrollToBottom() {
+    var chatBox = document.getElementById('chatBox');
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 });

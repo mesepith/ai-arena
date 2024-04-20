@@ -18,7 +18,7 @@
 
     <div class="row margin-bottom-20">
         <!-- Model selection dropdown -->
-        <div class="col-11 col-md-4">
+        <div class="model-selection-prnt col-10 col-md-3">
             <div class="model-selection">
                 <select id="modelSelection" class="form-control">
                     <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
@@ -46,6 +46,8 @@
     <div class="row flex-grow-1">
 
         <div class="col-md-3 sidebar collapse d-md-block" id="sidebarMenu">
+            <!-- New Chat Button -->
+            <button id="newChatButton" class="btn btn-success mt-3">Start New Chat</button>
             <div class="list-group">
                 @foreach($sessions as $session)
                     <a href="/chat?session_id={{ $session->chat_session_id }}" class="list-group-item list-group-item-action{{ $selectedSessionId == $session->chat_session_id ? ' active' : '' }}">
@@ -54,8 +56,7 @@
                 @endforeach
             </div>
 
-            <!-- New Chat Button -->
-            <button id="newChatButton" class="btn btn-success mt-3">Start New Chat</button>
+            
         </div>
         <div class="col-md-9 d-flex flex-column chat-container">
             <div class="chat-box" id="chatBox">

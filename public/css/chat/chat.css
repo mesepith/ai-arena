@@ -77,6 +77,7 @@ html, body {
 
 #newChatButton {
     width: 100%;
+    margin-bottom: 20px;
 }
 
 .navbar-toggler {
@@ -155,3 +156,4 @@ html, body {
     padding: 10px;
     overflow-y: auto; /* Changed from scroll to auto */
 }
+.model-selection-prnt{margin-left: 15px;}
