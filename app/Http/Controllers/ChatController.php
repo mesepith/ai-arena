@@ -24,10 +24,19 @@ class ChatController extends Controller
         $selectedSessionId = $request->get('session_id');
     
         // Fetch distinct chat session IDs along with the first message as the title
-        $sessions = Chat::select('chat_session_id', Chat::raw('MIN(SUBSTRING(user_message, 1, 50)) as title'), Chat::raw('MIN(created_at) as first_message_time'))
+        /*$sessions = Chat::select('chat_session_id', Chat::raw('MIN(SUBSTRING(user_message, 1, 50)) as title'), Chat::raw('MIN(created_at) as first_message_time'))
                          ->groupBy('chat_session_id')
                          ->orderBy('first_message_time', 'asc')
-                         ->get();
+                         ->get();*/
+
+        $sessions = Chat::select('chat_session_id', 
+        Chat::raw('MIN(CASE WHEN status = 1 THEN SUBSTRING(user_message, 1, 50) ELSE NULL END) as title'),
+        Chat::raw('MIN(CASE WHEN status = 1 THEN created_at ELSE NULL END) as first_message_time'))
+        ->groupBy('chat_session_id')
+        ->havingRaw('COUNT(CASE WHEN status = 1 THEN 1 ELSE NULL END) > 0') // Ensure there's at least one active message
+        ->orderBy('first_message_time', 'asc')
+        ->get();
+         
     
         if (!$selectedSessionId) {
             
@@ -39,7 +48,7 @@ class ChatController extends Controller
         } else {
             
             // Fetch messages from the selected session
-            $chats = Chat::where('chat_session_id', $selectedSessionId)->get();
+            $chats = Chat::where('chat_session_id', $selectedSessionId)->where('status', 1)->get();
             session(['chat_session_id' => $selectedSessionId]);
 
             // Format each AI response
@@ -69,7 +78,7 @@ class ChatController extends Controller
         session(['chat_session_id' => $chatSessionId]);
 
         // Your existing code to handle the message and AI response
-        $conversationHistory = Chat::where('chat_session_id', $chatSessionId)->get()->map(function ($chat) {
+        $conversationHistory = Chat::where('chat_session_id', $chatSessionId)->where('status', 1)->get()->map(function ($chat) {
             return [
                 ['role' => 'user', 'content' => $chat->user_message],
                 ['role' => 'assistant', 'content' => $chat->ai_response],
