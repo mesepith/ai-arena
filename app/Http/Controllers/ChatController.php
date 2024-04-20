@@ -24,11 +24,6 @@ class ChatController extends Controller
         $selectedSessionId = $request->get('session_id');
     
         // Fetch distinct chat session IDs along with the first message as the title
-        /*$sessions = Chat::select('chat_session_id', Chat::raw('MIN(SUBSTRING(user_message, 1, 50)) as title'), Chat::raw('MIN(created_at) as first_message_time'))
-                         ->groupBy('chat_session_id')
-                         ->orderBy('first_message_time', 'asc')
-                         ->get();*/
-
         $sessions = Chat::select('chat_session_id', 
         Chat::raw('MIN(CASE WHEN status = 1 THEN SUBSTRING(user_message, 1, 50) ELSE NULL END) as title'),
         Chat::raw('MIN(CASE WHEN status = 1 THEN created_at ELSE NULL END) as first_message_time'))
