@@ -1,4 +1,7 @@
 $(document).ready(function() {
+
+    var chatBox = $('#chatBox'); // Ensure this is inside document ready to fetch the correct element
+    var monitorScrolling = false;
     
     $('#sendButton').click(function() {
         var userInput = $('#userInput').val();
@@ -100,53 +103,63 @@ $(document).ready(function() {
     }
 
     function appendMessage(data, userInput) {
+        var userMessageElement = $('<div>').addClass('message user-message').html('<strong>User:</strong> ' + userInput);
+        chatBox.append(userMessageElement);
+        var sessionInput = $('#sessionInput').val(); 
 
-        var message = data.ai_response;
-        var messageId = data.message_id;
-        var sessionInput = $('#sessionInput').val(); // Get the session_id value
-
-        var messageContainer = $('<div>').addClass('message-container');
-
-        // Create a new div element for the user message
-        var userMessageElement = $('<div>').addClass('message user-message');
-        userMessageElement.html('<strong>User:</strong> ' + userInput);
-        
-         // Append a copy button for the user message
-        var userCopyBtn = $('<button>')
-        .addClass('copy-btn btn btn-sm btn-outline-secondary')
-        .attr('data-message', userInput)
-        .text('Copy');
-
+        // Append user message with 'Copy' button
+        var userMessageElement = $('<div>').addClass('message user-message').html('<strong>User:</strong> ' + userInput);
+        var userCopyBtn = $('<button>').addClass('copy-btn btn btn-sm btn-outline-secondary').attr('data-message', userInput).text('Copy');
         userMessageElement.append(userCopyBtn);
+        chatBox.append(userMessageElement);
 
-        // Create a new div element for the AI message
         var aiMessageElement = $('<div>').addClass('message ai-message');
-        aiMessageElement.html('<strong>AI:</strong> ' + message);
+        chatBox.append(aiMessageElement);
 
-        // Append a copy button for the AI message
-        var aiCopyBtn = $('<button>')
-        .addClass('copy-btn btn btn-sm btn-outline-secondary')
-        .attr('data-message', message)
-        .text('Copy');
+        var options = {
+            strings: [data.ai_response],
+            typeSpeed: 10,
+            contentType: 'html',  // Assuming 'data.ai_response' could include HTML
+            onComplete: function(self) {
+                monitorScrolling = false; // Stop monitoring since typing is done
+                // Append 'Copy' and 'Delete' buttons after typing complete
+                var aiCopyBtn = $('<button>').addClass('copy-btn btn btn-sm btn-outline-secondary').attr('data-message', data.ai_response).text('Copy');
+                var deleteBtn = $('<button>').addClass('delete-btn btn btn-sm btn-outline-danger').attr('data-id', data.message_id).attr('data-session-id', sessionInput).text('Delete');
+                aiMessageElement.append(aiCopyBtn).append(deleteBtn);
+            }
+        };
 
-        // Append a delete button for the AI message with the necessary data attributes
-        var deleteBtn = $('<button>')
-        .addClass('delete-btn btn btn-sm btn-outline-danger')
-        .attr('data-id', messageId)
-        .attr('data-session-id', sessionInput)
-        .text('Delete');
-
-        aiMessageElement.append(aiCopyBtn).append(deleteBtn);
-
-        // Append both user and AI message elements to the message container
-        messageContainer.append(userMessageElement).append(aiMessageElement);
-
-        // Append the new message container to the chat box div
-        $('#chatBox').append(messageContainer);
-        
-        // Scroll to the bottom of the chat box to show the new message
-        $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+        monitorScrolling = true; // Begin monitoring scrolling during typing
+        monitorUserScroll(); 
+        new Typed(aiMessageElement[0], options);
     }
+    
+     // Function to monitor scrolling
+     function monitorUserScroll() {
+        if (monitorScrolling) {
+            var isNearBottom = chatBox.scrollTop() + chatBox.innerHeight() >= chatBox[0].scrollHeight - 100;
+            if (isNearBottom) {
+                chatBox.scrollTop(chatBox.prop("scrollHeight"));
+            }
+            setTimeout(monitorUserScroll, 300); // Check scroll position repeatedly during typing
+        }
+    }
+
+    // User scrolling detection and enabling/disabling monitoring based on position
+    chatBox.on('scroll', function() {
+        var isNearBottom = $(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight - 100;
+        if (isNearBottom) {
+            if (!monitorScrolling) {
+                monitorScrolling = true;
+                monitorUserScroll(); // Restart monitoring if user scrolls back to bottom
+            }
+        } else {
+            monitorScrolling = false; // Disable monitoring if user scrolls away from bottom
+        }
+    });
+    
+    
+    
     
     
 

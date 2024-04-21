@@ -223,7 +223,7 @@ class ChatController extends Controller
 
     private function generateChatTitle($userMessage, $model)
     {
-        $modMsg = 'What will be title of this prompt :' . $userMessage;
+        $modMsg = 'What will be title of this prompt :' . $userMessage . '. It should be under 35 character length';
     
         // Example pseudocode, replace with actual API call and response handling
         $conversation = [['role' => 'user', 'content' => $modMsg]];
