@@ -29,7 +29,7 @@ class ChatController extends Controller
         Chat::raw('MIN(CASE WHEN status = 1 THEN created_at ELSE NULL END) as first_message_time'))
         ->groupBy('chat_session_id')
         ->havingRaw('COUNT(CASE WHEN status = 1 THEN 1 ELSE NULL END) > 0') // Ensure there's at least one active message
-        ->orderBy('first_message_time', 'asc')
+        ->orderBy('first_message_time', 'desc')
         ->get();
          
     
