@@ -5,7 +5,7 @@ $(document).ready(function() {
         var modelSelected = $('#modelSelection').val(); // Get the selected model
         var sessionInput = $('#sessionInput').val(); // Get the session_id value
         $('#userInput').val(''); // Clear input field
-        appendMessage1(userInput, 'user-message');
+        // appendMessage(userInput, 'user-message');
         
 
         // Show the spinnersend-button-pnt
@@ -28,7 +28,8 @@ $(document).ready(function() {
             },
             success: function(data) {
                 
-                appendMessage(data.ai_response, 'ai-message'); 
+                //appendMessage(data.ai_response, 'ai-message'); 
+                appendMessage(data, userInput); 
 
                 // Construct a meaningful title from the user's input and AI's response
                 var userSnippet = userInput.length > 30 ? userInput.substring(0, 30) + '...' : userInput;
@@ -87,27 +88,50 @@ $(document).ready(function() {
         $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
     }
 
-    function appendMessage(message, className) {
-        // Create a new div element for the message
-        var messageElement = $('<div>').addClass('message ' + className);
+    function appendMessage(data, userInput) {
+
+        var message = data.ai_response;
+        var messageId = data.message_id;
+        var sessionInput = $('#sessionInput').val(); // Get the session_id value
+
+        var messageContainer = $('<div>').addClass('message-container');
+
+        // Create a new div element for the user message
+        var userMessageElement = $('<div>').addClass('message user-message');
+        userMessageElement.html('<strong>User:</strong> ' + userInput);
         
-        // Set the inner HTML of the message element based on whether it's an AI or user message
-        if (className === 'ai-message') {
-            messageElement.html('<strong>AI:</strong> ' + message);
-        } else {
-            messageElement.html('<strong>User:</strong> ' + message);
-        }
-        
-        // Append a copy button for the message, but set the data-message attribute only with the AI response
-        var copyBtn = $('<button>')
-            .addClass('copy-btn btn btn-sm btn-outline-secondary')
-            .attr('data-message', message) // Just the message, not the full HTML
-            .text('Copy');
-        
-        messageElement.append(copyBtn);
-        
-        // Append the new message element to the chat box div
-        $('#chatBox').append(messageElement);
+         // Append a copy button for the user message
+        var userCopyBtn = $('<button>')
+        .addClass('copy-btn btn btn-sm btn-outline-secondary')
+        .attr('data-message', userInput)
+        .text('Copy');
+
+        userMessageElement.append(userCopyBtn);
+
+        // Create a new div element for the AI message
+        var aiMessageElement = $('<div>').addClass('message ai-message');
+        aiMessageElement.html('<strong>AI:</strong> ' + message);
+
+        // Append a copy button for the AI message
+        var aiCopyBtn = $('<button>')
+        .addClass('copy-btn btn btn-sm btn-outline-secondary')
+        .attr('data-message', message)
+        .text('Copy');
+
+        // Append a delete button for the AI message with the necessary data attributes
+        var deleteBtn = $('<button>')
+        .addClass('delete-btn btn btn-sm btn-outline-danger')
+        .attr('data-id', messageId)
+        .attr('data-session-id', sessionInput)
+        .text('Delete');
+
+        aiMessageElement.append(aiCopyBtn).append(deleteBtn);
+
+        // Append both user and AI message elements to the message container
+        messageContainer.append(userMessageElement).append(aiMessageElement);
+
+        // Append the new message container to the chat box div
+        $('#chatBox').append(messageContainer);
         
         // Scroll to the bottom of the chat box to show the new message
         $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
@@ -201,5 +225,43 @@ function scrollToBottom() {
     var chatBox = document.getElementById('chatBox');
     chatBox.scrollTop = chatBox.scrollHeight;
 }
+
+// Event handler for the "Delete" button to delete messages
+$(document).on('click', '.delete-btn', function() {
+    var messageId = $(this).data('id');
+    var sessionInput = $('#sessionInput').val(); // Get the session_id value
+    var messageContainer = $(this).closest('.message-container'); // Assuming each chat has a parent container with class 'message-container'
+
+    if (confirm('Are you sure you want to delete this message?')) {
+        $.ajax({
+            url: '/chat/delete/' + messageId,
+            type: 'POST',
+            data: {
+                session_id: sessionInput // Pass the session_id along with the request
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            success: function(response) {
+                if (response.success) {
+                    messageContainer.remove(); // Remove the entire message container from the chat
+                    // Check if there are no messages left in this session and remove the session title
+                    if ($('.chat-container .message-container').length === 0) {
+                        // Remove the session from the sidebar
+                        $('.list-group a.active').remove();
+                        // Optionally, you could also reset the chat interface or prompt the user to start a new chat
+                    }
+                } else {
+                    alert(response.message); // Show error message
+                }
+            },
+            error: function(xhr) {
+                alert('Error: ' + xhr.responseText);
+            }
+        });
+    }
+});
+
 
 });

@@ -29,6 +29,20 @@ html, body {
     text-align: left;
 }
 
+.user-message .btn {
+    margin-left: 5px;
+    margin-bottom: 5px;
+}
+
+.ai-message .btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.message .btn:last-child {
+    margin-right: 0;
+}
+
 .row.flex-grow-1 {
     flex-grow: 1;
     display: flex;

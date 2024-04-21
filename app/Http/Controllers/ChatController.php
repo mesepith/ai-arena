@@ -117,7 +117,7 @@ class ChatController extends Controller
         $chat->save();
         
         // Return the AI response along with the session_id to ensure the frontend knows which session is active
-        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId]);
+        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId, 'message_id' => $chat->id]);
     }
 
     private function getAIService($model)
@@ -131,32 +131,49 @@ class ChatController extends Controller
     }
 
     private function formatAIResponse($response)
-{
-    // First, format explicitly marked code blocks
-    $response = preg_replace_callback('/```(.*?)\n(.*?)```/s', function ($matches) {
-        $languageIdentifier = trim($matches[1]);
-        $codeBlock = $matches[2];
+    {
+        // First, format explicitly marked code blocks
+        $response = preg_replace_callback('/```(.*?)\n(.*?)```/s', function ($matches) {
+            $languageIdentifier = trim($matches[1]);
+            $codeBlock = $matches[2];
 
-        // Check if the first line is a language identifier and remove it
-        if (preg_match('/^\w+$/', $languageIdentifier)) {
+            // Check if the first line is a language identifier and remove it
+            if (preg_match('/^\w+$/', $languageIdentifier)) {
+                return '<div><pre><code>' . htmlspecialchars($codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
+            } else {
+                // If it's not just a language identifier, include it back
+                return '<div><pre><code>' . htmlspecialchars($languageIdentifier . "\n" . $codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
+            }
+        }, $response);
+
+        // Handle unmarked code patterns
+        $response = preg_replace_callback('/<\?(php)?(.*?)\?>/s', function ($matches) {
+            $codeBlock = trim($matches[2]);
             return '<div><pre><code>' . htmlspecialchars($codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
-        } else {
-            // If it's not just a language identifier, include it back
-            return '<div><pre><code>' . htmlspecialchars($languageIdentifier . "\n" . $codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
+        }, $response);
+
+        // Now, handle Markdown formatting for the rest of the content
+        $parsedown = new Parsedown();
+        $response = $parsedown->text($response);
+
+        return $response;
+    }
+
+    public function delete(Request $request, $id)
+    {
+        $chatSessionId = $request->input('session_id');
+        $chat = Chat::where('id', $id)->where('chat_session_id', $chatSessionId)->first();
+
+        if ($chat) {
+            $chat->status = 0;
+            $chat->save();
+
+            return response()->json(['success' => true, 'message' => 'Message deleted successfully.']);
         }
-    }, $response);
 
-    // Handle unmarked code patterns
-    $response = preg_replace_callback('/<\?(php)?(.*?)\?>/s', function ($matches) {
-        $codeBlock = trim($matches[2]);
-        return '<div><pre><code>' . htmlspecialchars($codeBlock, ENT_QUOTES, 'UTF-8') . '</code></pre><button class="copy-code-btn btn btn-sm btn-outline-secondary">Copy Code</button></div>';
-    }, $response);
+        return response()->json(['success' => false, 'message' => 'Message not found.'], 404);
+    }
 
-    // Now, handle Markdown formatting for the rest of the content
-    $parsedown = new Parsedown();
-    $response = $parsedown->text($response);
 
-    return $response;
-}
     
 }

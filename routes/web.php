@@ -9,6 +9,8 @@ Route::get('/', function () {
 
 Route::get('/chat', [ChatController::class, 'index']);
 Route::post('/chat', [ChatController::class, 'store']);
+Route::post('/chat/delete/{id}', [ChatController::class, 'delete'])->name('chat.delete');
+
 
 Route::get('/editor', function () {
     return view('editor');

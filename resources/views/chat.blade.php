@@ -61,14 +61,18 @@
         <div class="col-md-9 d-flex flex-column chat-container">
             <div class="chat-box" id="chatBox">
                 @foreach($chats as $chat)
-                    <div class="message user-message">
-                        <strong>User:</strong> {{ $chat->user_message }}
-                        <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->user_message }}">Copy</button>
+                    <div class="message-container">
+                        <div class="message user-message">
+                            <strong>User:</strong> {{ $chat->user_message }}
+                            <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->user_message }}">Copy</button>
+                        </div>
+                        <div class="message ai-message">
+                            <strong>AI:</strong> {!! $chat->ai_response !!}
+                            <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->ai_response }}">Copy</button>
+                            <button class="delete-btn btn btn-sm btn-outline-danger" data-id="{{ $chat->id }}" data-session-id="{{ $selectedSessionId }}">Delete</button>
+                        </div>
                     </div>
-                    <div class="message ai-message">
-                        <strong>AI:</strong> {!! $chat->ai_response !!}
-                        <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->ai_response }}">Copy</button>
-                    </div>
+                    
                 @endforeach
             </div>
 
