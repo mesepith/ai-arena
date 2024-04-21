@@ -262,6 +262,9 @@ $(document).on('click', '.delete-btn', function() {
                         // Remove the session from the sidebar
                         $('.list-group a.active').remove();
                         // Optionally, you could also reset the chat interface or prompt the user to start a new chat
+
+                        //load new session
+                        $('#newChatButton').click();
                     }
                 } else {
                     alert(response.message); // Show error message

@@ -201,6 +201,20 @@ class ChatController extends Controller
             $chat->status = 0;
             $chat->save();
 
+            // Check if there are no more active messages in this chat session
+            $remainingChatsCount = Chat::where('chat_session_id', $chatSessionId)
+                                        ->where('status', 1)
+                                        ->count();
+                                        
+            if ($remainingChatsCount === 0) {
+                // No more messages, so update the status of the chats_title as well
+                $chatsTitle = ChatsTitle::where('chat_session_id', $chatSessionId)->first();
+                if ($chatsTitle) {
+                    $chatsTitle->status = 0;
+                    $chatsTitle->save();
+                }
+            }
+
             return response()->json(['success' => true, 'message' => 'Message deleted successfully.']);
         }
 
