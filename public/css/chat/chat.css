@@ -181,3 +181,23 @@ pre code {
     border-radius: 4px;
     font-family: monospace;
 }
+
+/* Animate title of chat start */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.word-animate {
+    display: inline-block;
+    animation-name: slideIn;
+    animation-duration: 0.5s; /* Adjust the speed if necessary */
+    animation-fill-mode: both;
+}
+/* Animate title of chat start */

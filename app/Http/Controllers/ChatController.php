@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Chat;
+use App\Models\ChatsTitle;
 use App\Services\OpenAIService;
 use App\Services\AnthropicService;
 use Illuminate\Support\Str;
@@ -24,13 +25,24 @@ class ChatController extends Controller
         $selectedSessionId = $request->get('session_id');
     
         // Fetch distinct chat session IDs along with the first message as the title
-        $sessions = Chat::select('chat_session_id', 
+        /*$sessions = Chat::select('chat_session_id', 
         Chat::raw('MIN(CASE WHEN status = 1 THEN SUBSTRING(user_message, 1, 50) ELSE NULL END) as title'),
         Chat::raw('MIN(CASE WHEN status = 1 THEN created_at ELSE NULL END) as first_message_time'))
         ->groupBy('chat_session_id')
         ->havingRaw('COUNT(CASE WHEN status = 1 THEN 1 ELSE NULL END) > 0') // Ensure there's at least one active message
         ->orderBy('first_message_time', 'desc')
+        ->get();*/
+
+         // Fetch distinct chat session IDs along with the title from chats_title table
+         $sessions = Chat::select('chats.chat_session_id', 'chats_title.title', 
+         Chat::raw('MAX(chats.created_at) as last_message_time'))
+        ->join('chats_title', 'chats.id', '=', 'chats_title.chat_id')
+        ->where('chats.status', 1)
+        ->groupBy('chats.chat_session_id', 'chats_title.title')
+        ->orderBy('last_message_time', 'desc')
         ->get();
+
+        // echo '<pre>'; print_r($sessions); exit;
          
     
         if (!$selectedSessionId) {
@@ -103,6 +115,8 @@ class ChatController extends Controller
             $service_by = 'openai';
         }
 
+        $isNewSession = !Chat::where('chat_session_id', $chatSessionId)->exists();
+
         $chat = new Chat();
         $chat->user_message = $userMessage;
         $chat->ai_response = $aiResponse;
@@ -115,9 +129,28 @@ class ChatController extends Controller
         $chat->total_tokens = $totalTokens;
 
         $chat->save();
+
+        $chat_title='';
+
+        if ($isNewSession) {
+
+            $titleResponse = $this->generateChatTitle($userMessage, 'gpt-3.5-turbo');
+            $chat_title = $titleResponse['title'];
+            // Save the title to the database
+            $chatTitle = new ChatsTitle([
+                'chat_id' => $chat->id,
+                'chat_session_id' => $chatSessionId,
+                'title' => $titleResponse['title'],
+                // rest of the fields
+            ]);
+            $chatTitle->save();
+    
+            // Update the session list in the frontend
+            // Logic to prepend to the session list
+        }
         
         // Return the AI response along with the session_id to ensure the frontend knows which session is active
-        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId, 'message_id' => $chat->id]);
+        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId, 'message_id' => $chat->id, 'chat_title' => $chat_title]);
     }
 
     private function getAIService($model)
@@ -174,6 +207,17 @@ class ChatController extends Controller
         return response()->json(['success' => false, 'message' => 'Message not found.'], 404);
     }
 
-
+    private function generateChatTitle($userMessage, $model)
+    {
+        $modMsg = 'What will be title of this prompt :' . $userMessage;
+    
+        // Example pseudocode, replace with actual API call and response handling
+        $conversation = [['role' => 'user', 'content' => $modMsg]];
+        $responseBody = $this->openAIService->generateResponse($conversation, $model);
+        $titleResponse = array();
+        $titleResponse['title'] = trim($responseBody['ai_response'], '"');
+    
+        return $titleResponse;
+    }
     
 }

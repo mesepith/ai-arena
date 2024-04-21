@@ -31,29 +31,40 @@ $(document).ready(function() {
                 //appendMessage(data.ai_response, 'ai-message'); 
                 appendMessage(data, userInput); 
 
-                // Construct a meaningful title from the user's input and AI's response
-                var userSnippet = userInput.length > 30 ? userInput.substring(0, 30) + '...' : userInput;
-                var aiSnippet = data.ai_response.length > 30 ? data.ai_response.substring(0, 30) + '...' : data.ai_response;
-                var sessionTitle = userSnippet + ' ... ' + aiSnippet;
-
                 var isNewSession = true;
                 $('.list-group a').each(function() {
                     if ($(this).attr('href').includes(data.session_id)) {
+                        console.log('old session');
                         isNewSession = false;
                         // Update the title for an existing session
-                        $(this).text(sessionTitle);
+                        // $(this).text(sessionTitle);
                         return false; // break the loop
+                    }else{
+                        console.log('new session');
                     }
                 });
 
                 // If it's a new session, add it to the list with the constructed title
                 if (isNewSession) {
+                    var words = data.chat_title.split(' '); // Split the title into words
                     var newSessionLink = $('<a>')
-                        .addClass('list-group-item list-group-item-action')
-                        .attr('href', '/chat?session_id=' + data.session_id)
-                        .text(sessionTitle); // Use the constructed title
-
-                    $('.list-group').prepend(newSessionLink); // Add the new session link to the top of the list
+                        .addClass('list-group-item list-group-item-action active')
+                        .attr('href', '/chat?session_id=' + data.session_id);
+            
+                    words.forEach(function(word, index) {
+                        // Create a span for each word and add the animation class
+                        var wordSpan = $('<span>')
+                            .addClass('word-animate')
+                            .css('animation-delay', (index * 0.9) + 's') // Delay each word
+                            .html(word + '&nbsp;'); // Add a non-breaking space after the word
+                        
+                        // Append the word span to the link
+                        newSessionLink.append(wordSpan);
+                    });
+            
+                    newSessionLink.hide();
+                    $('.list-group').prepend(newSessionLink);
+                    newSessionLink.fadeIn();
                 }
 
                 // Update the hidden session input and the URL without reloading the page
