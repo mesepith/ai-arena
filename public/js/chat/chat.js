@@ -2,6 +2,7 @@ $(document).ready(function() {
 
     var chatBox = $('#chatBox'); // Ensure this is inside document ready to fetch the correct element
     var monitorScrolling = false;
+    var aiTyping = false;  // This flag should be true when AI starts typing and false when AI response is completed.
     
     $('#sendButton').click(function() {
         var userInput = $('#userInput').val();
@@ -103,6 +104,7 @@ $(document).ready(function() {
     }
 
     function appendMessage(data, userInput) {
+        aiTyping = true;  // AI starts typing
         var sessionInput = $('#sessionInput').val(); 
 
         // Append user message with 'Copy' button
@@ -119,11 +121,23 @@ $(document).ready(function() {
             typeSpeed: 10,
             contentType: 'html',  // Assuming 'data.ai_response' could include HTML
             onComplete: function(self) {
-                monitorScrolling = false; // Stop monitoring since typing is done
-                // Append 'Copy' and 'Delete' buttons after typing complete
-                var aiCopyBtn = $('<button>').addClass('copy-btn btn btn-sm btn-outline-secondary').attr('data-message', data.ai_response).text('Copy');
-                var deleteBtn = $('<button>').addClass('delete-btn btn btn-sm btn-outline-danger').attr('data-id', data.message_id).attr('data-session-id', sessionInput).text('Delete');
+                aiTyping = false;  // AI finishes typing
+                monitorScrolling = false; // Disable monitoring as AI finishes typing.
+            
+                var aiCopyBtn = $('<button>').addClass('copy-btn btn btn-sm btn-outline-secondary')
+                                             .attr('data-message', data.ai_response)
+                                             .text('Copy');
+                var deleteBtn = $('<button>').addClass('delete-btn btn btn-sm btn-outline-danger')
+                                             .attr('data-id', data.message_id)
+                                             .attr('data-session-id', sessionInput)
+                                             .text('Delete');
+            
+                // Append buttons and deactivate unnecessary scrolling
                 aiMessageElement.append(aiCopyBtn).append(deleteBtn);
+            
+                setTimeout(() => { // Short delay to let potential user scroll adjustments settle.
+                    updateScrollBehavior(false); // Update scroll monitoring behavior
+                }, 100);
             }
         };
 
@@ -132,32 +146,53 @@ $(document).ready(function() {
         new Typed(aiMessageElement[0], options);
     }
     
-     // Function to monitor scrolling
-     function monitorUserScroll() {
-        if (monitorScrolling) {
-            var isNearBottom = chatBox.scrollTop() + chatBox.innerHeight() >= chatBox[0].scrollHeight - 100;
-            if (isNearBottom) {
-                chatBox.scrollTop(chatBox.prop("scrollHeight"));
-            }
-            setTimeout(monitorUserScroll, 300); // Check scroll position repeatedly during typing
+    // Variable to store user's scroll position
+    var userScrollPos = 0;
+
+    function updateScrollBehavior(engage) {
+        monitorScrolling = engage;
+        if (engage) {
+            monitorUserScroll();
+        }
+    }
+// Adjust the scroll sensitivity to allow smoother scrolling
+
+// Variable to store the previous scroll position
+var prevScrollPos = 0;
+
+chatBox.on('scroll', function() {
+    var currentScrollPos = $(this).scrollTop();
+
+    if (currentScrollPos < prevScrollPos) {
+        // User is scrolling up
+        if (aiTyping) { // Allow scrolling up during AI typing
+            monitorScrolling = false; // Disable auto-scroll during user interaction
+        }
+    } else {
+        // User is scrolling down or not scrolling
+        if (aiTyping) { // Re-enable auto-scroll if AI is typing
+            monitorScrolling = true;
+            monitorUserScroll();
         }
     }
 
-    // User scrolling detection and enabling/disabling monitoring based on position
-    chatBox.on('scroll', function() {
-        var isNearBottom = $(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight - 100;
-        if (isNearBottom) {
-            if (!monitorScrolling) {
-                monitorScrolling = true;
-                monitorUserScroll(); // Restart monitoring if user scrolls back to bottom
-            }
-        } else {
-            monitorScrolling = false; // Disable monitoring if user scrolls away from bottom
+    // Update the previous scroll position for comparison
+    prevScrollPos = currentScrollPos;
+});
+
+function monitorUserScroll() {
+    if (monitorScrolling) {
+        var scrollPosition = chatBox.scrollTop() + chatBox.innerHeight();
+        var nearBottom = scrollPosition >= chatBox[0].scrollHeight - 100;
+
+        if (nearBottom) {
+            chatBox.scrollTop(chatBox.prop("scrollHeight"));
         }
-    });
-    
-    
-    
+
+        setTimeout(monitorUserScroll, 300); // Check scroll position repeatedly during typing
+    }
+}
+
     
     
 
@@ -244,9 +279,9 @@ function generateUUID() { // Public Domain/MIT
 scrollToBottom();
 
 function scrollToBottom() {
-    var chatBox = document.getElementById('chatBox');
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.scrollTop(chatBox.prop("scrollHeight"));
 }
+
 
 // Event handler for the "Delete" button to delete messages
 $(document).on('click', '.delete-btn', function() {
