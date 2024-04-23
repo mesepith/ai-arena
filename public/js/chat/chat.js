@@ -103,8 +103,6 @@ $(document).ready(function() {
     }
 
     function appendMessage(data, userInput) {
-        var userMessageElement = $('<div>').addClass('message user-message').html('<strong>User:</strong> ' + userInput);
-        chatBox.append(userMessageElement);
         var sessionInput = $('#sessionInput').val(); 
 
         // Append user message with 'Copy' button
