@@ -24,6 +24,39 @@ class OpenAIService implements AIServiceInterface
 
     public function generateResponse($conversation, $model)
     {
+        $formattedConversation = array_map(function ($message) {
+            if (isset($message['content']) && is_array($message['content']) && isset($message['content']['type'])) {
+                if ($message['content']['type'] === 'image_url') {
+                    // Correctly formatting the image_url to be an object with 'url' key
+                    $imageContent = [
+                        'type' => 'image_url',
+                        'image_url' => $message['content']['image_url']
+                    ];
+                    // If there is text associated with the image, include it as a separate text object
+                    if (isset($message['content']['text'])) {
+                        return [
+                            'role' => $message['role'],
+                            'content' => [
+                                ['type' => 'text', 'text' => $message['content']['text']],
+                                $imageContent
+                            ]
+                        ];
+                    } else {
+                        return [
+                            'role' => $message['role'],
+                            'content' => [$imageContent]
+                        ];
+                    }
+                } else {
+                    // If no special handling is needed, return the message as is
+                    return $message;
+                }
+            } else {
+                // This assumes that 'content' is already properly formatted if not an array with 'type'
+                return $message;
+            }
+        }, $conversation);
+    
         try {
             $response = $this->client->post('/v1/chat/completions', [
                 'headers' => [
@@ -31,28 +64,23 @@ class OpenAIService implements AIServiceInterface
                 ],
                 'json' => [
                     'model' => $model,
-                    'messages' => $conversation,
+                    'messages' => $formattedConversation,
                 ],
             ]);
-
+    
             $responseBody = json_decode($response->getBody(), true);
-
-            // Extract the AI's response message
-            $aiResponse = $responseBody['choices'][0]['message']['content'] ?? 'Sorry, I could not generate a response.';
-
-            // Extract token counts from the response
-            $promptTokens = $responseBody['usage']['prompt_tokens'] ?? null;
-            $completionTokens = $responseBody['usage']['completion_tokens'] ?? null;
-            $totalTokens = $responseBody['usage']['total_tokens'] ?? null;
-
+    
+            // Debug output
+            // echo '<pre>'; print_r($responseBody); // Uncomment for debugging
+    
+            // Return the necessary response components
             return [
-                'ai_response' => $aiResponse,
-                'prompt_tokens' => $promptTokens,
-                'completion_tokens' => $completionTokens,
-                'total_tokens' => $totalTokens,
+                'ai_response' => $responseBody['choices'][0]['message']['content'] ?? 'Sorry, I could not generate a response.',
+                'prompt_tokens' => $responseBody['usage']['prompt_tokens'] ?? null,
+                'completion_tokens' => $responseBody['usage']['completion_tokens'] ?? null,
+                'total_tokens' => $responseBody['usage']['total_tokens'] ?? null,
             ];
         } catch (GuzzleException $e) {
-            // Handle any exceptions that occur during the API call
             return [
                 'ai_response' => 'An error occurred: ' . $e->getMessage(),
                 'prompt_tokens' => null,
@@ -61,4 +89,8 @@ class OpenAIService implements AIServiceInterface
             ];
         }
     }
+    
+
+
+    
 }

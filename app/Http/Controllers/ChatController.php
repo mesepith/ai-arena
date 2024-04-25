@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Chat;
 use App\Models\ChatsTitle;
+use App\Models\ChatsImage;
 use App\Services\OpenAIService;
 use App\Services\AnthropicService;
 use Illuminate\Support\Str;
@@ -69,11 +70,17 @@ class ChatController extends Controller
         $userMessage = $request->input('message');
         // Check if session_id is provided in the request, otherwise generate a new one
         $chatSessionId = $request->input('session_id');
-
+        
         if( $chatSessionId !== session('chat_session_id')){ return response()->json(['success' => 0, 'message' => 'chat session is not matching']);}
-
+        
+        
         // Set the new or existing session_id in the session
         session(['chat_session_id' => $chatSessionId]);
+
+        $isNewSession = !Chat::where('chat_session_id', $chatSessionId)->exists();
+
+        $images = $request->file('images', []);
+        $model = $request->input('model', 'gpt-3.5-turbo'); // Default to gpt-3.5-turbo if not provided
 
         // Your existing code to handle the message and AI response
         $conversationHistory = Chat::where('chat_session_id', $chatSessionId)->where('status', 1)->get()->map(function ($chat) {
@@ -85,9 +92,52 @@ class ChatController extends Controller
 
         $conversationHistory[] = ['role' => 'user', 'content' => $userMessage];
 
-        $model = $request->input('model', 'gpt-3.5-turbo'); // Default to gpt-3.5-turbo if not provided
+         // Create the chat instance and save it
+        $chat = new Chat();
+        $chat->user_message = $userMessage;
+        $chat->chat_session_id = $chatSessionId;
+        $chat->ai_model = $model;
+        // $chat->service_by = 'openai'; // Default, adjust based on logic as needed
+        $chat->status = 1;
+        $chat->save(); // Save the chat to generate an ID
+
+        // Process images if they are uploaded
+        $imageLocations = [];
+        if (count($images) > 0) {
+            $chat->has_image = 1;
+            $chat->save(); // Update the chat to reflect it has images
+            foreach ($images as $image) {
+                $path = $image->store('chat_images', 'public');
+                $imageLocations[] = $path;
+                ChatsImage::create([
+                    'chat_id' => $chat->id,
+                    'chat_session_id' => $chatSessionId,
+                    'image_location' => $path,
+                ]);
+            }
+        }
+
+        
+
+        // Include images in the conversation history if present
+        foreach ($imageLocations as $location) {
+            $conversationHistory[] = [
+                'role' => 'user',
+                'content' => [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        // 'url' => asset('storage/' . $location)
+                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg'
+                    ]
+                ]
+            ];
+        }
+
+        
         $aiService = $this->getAIService($model);
         $responseBody = $aiService->generateResponse($conversationHistory, $model);
+
+        // echo '<pre>'; print_r($responseBody);
 
         // $aiResponse = $responseBody['ai_response'];
 
@@ -106,14 +156,12 @@ class ChatController extends Controller
             $service_by = 'openai';
         }
 
-        $isNewSession = !Chat::where('chat_session_id', $chatSessionId)->exists();
-
-        $chat = new Chat();
-        $chat->user_message = $userMessage;
+        // $chat = new Chat();
+        // $chat->user_message = $userMessage;
         $chat->ai_response = $aiResponse;
-        $chat->chat_session_id = $chatSessionId;
+        // $chat->chat_session_id = $chatSessionId;
 
-        $chat->ai_model = $model;
+        // $chat->ai_model = $model;
         $chat->service_by = $service_by;
         $chat->prompt_tokens = $promptTokens;
         $chat->completion_tokens = $completionTokens;
@@ -141,7 +189,7 @@ class ChatController extends Controller
         }
         
         // Return the AI response along with the session_id to ensure the frontend knows which session is active
-        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId, 'message_id' => $chat->id, 'chat_title' => $chat_title]);
+        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId, 'message_id' => $chat->id, 'chat_title' => $chat_title, 'images' => $imageLocations]);
     }
 
     private function getAIService($model)

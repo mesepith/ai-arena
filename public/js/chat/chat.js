@@ -5,11 +5,22 @@ $(document).ready(function() {
     var aiTyping = false;  // This flag should be true when AI starts typing and false when AI response is completed.
     
     $('#sendButton').click(function() {
+
         var userInput = $('#userInput').val();
         var modelSelected = $('#modelSelection').val(); // Get the selected model
         var sessionInput = $('#sessionInput').val(); // Get the session_id value
         $('#userInput').val(''); // Clear input field
         // appendMessage(userInput, 'user-message');
+
+        var formData = new FormData();
+        formData.append('message', userInput);
+        formData.append('session_id', sessionInput);
+        formData.append('model', modelSelected);
+
+        var images = document.getElementById('imageInput').files;
+        for (var i = 0; i < images.length; i++) {
+            formData.append('images[]', images[i]);
+        }
         
 
         // Show the spinnersend-button-pnt
@@ -20,15 +31,11 @@ $(document).ready(function() {
         $.ajax({
             url: '/chat',
             type: 'POST',
-            dataType: 'json',
-            data: JSON.stringify({
-                message: userInput,
-                session_id: sessionInput, // Use the session_id from the hidden input
-                model: modelSelected // Send the selected model to the backend
-            }),
+            data: formData,
+            contentType: false,
+            processData: false,
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                'Content-Type': 'application/json'
             },
             success: function(data) {
                 
