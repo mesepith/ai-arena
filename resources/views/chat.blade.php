@@ -59,20 +59,42 @@
         </div>
         <div class="col-md-9 d-flex flex-column chat-container">
             <div class="chat-box" id="chatBox">
-                @foreach($chats as $chat)
-                    <div class="message-container">
-                        <div class="message user-message">
-                            <strong>User:</strong> {{ $chat->user_message }}
-                            <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->user_message }}">Copy</button>
-                        </div>
-                        <div class="message ai-message">
-                            <strong>AI:</strong> {!! $chat->ai_response !!}
-                            <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->ai_response }}">Copy</button>
-                            <button class="delete-btn btn btn-sm btn-outline-danger" data-id="{{ $chat->id }}" data-session-id="{{ $selectedSessionId }}">Delete</button>
+                
+                @if(count($chats) === 0)
+                    <!-- Suggestions Box -->
+                    <div id="suggestionBox" class="suggestion-box">
+                        <p>How can I help you today?</p>
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <button class="suggestion-btn" data-suggestion="Create a morning routine to boost my productivity">Create a morning routine</button>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <button class="suggestion-btn" data-suggestion="Write a thank-you note to my interviewer">Write a thank-you note</button>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <button class="suggestion-btn" data-suggestion="Design a creative business card that really stands out">Design a business card</button>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <button class="suggestion-btn" data-suggestion="Help me pick an outfit that will look good on camera">Help me pick an outfit</button>
+                            </div>
                         </div>
                     </div>
-                    
-                @endforeach
+                @else
+                    @foreach($chats as $chat)
+                        <div class="message-container">
+                            <div class="message user-message">
+                                <strong>User:</strong> {{ $chat->user_message }}
+                                <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->user_message }}">Copy</button>
+                            </div>
+                            <div class="message ai-message">
+                                <strong>AI:</strong> {!! $chat->ai_response !!}
+                                <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->ai_response }}">Copy</button>
+                                <button class="delete-btn btn btn-sm btn-outline-danger" data-id="{{ $chat->id }}" data-session-id="{{ $selectedSessionId }}">Delete</button>
+                            </div>
+                        </div>
+                        
+                    @endforeach
+                @endif
             </div>
 
 

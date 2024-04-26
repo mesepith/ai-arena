@@ -18,6 +18,8 @@ $(document).ready(function() {
     
     $('#sendButton').click(function() {
 
+        $('#suggestionBox').hide(); // Hide the suggestion box and the "How can I help you today?" text
+
         var userInput = $('#userInput').val();
         var modelSelected = $('#modelSelection').val(); // Get the selected model
         var sessionInput = $('#sessionInput').val(); // Get the session_id value
@@ -50,8 +52,7 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
             },
             success: function(data) {
-                
-                //appendMessage(data.ai_response, 'ai-message'); 
+
                 appendMessage(data, userInput); 
 
                 var isNewSession = true;
@@ -340,6 +341,13 @@ $(document).on('click', '.delete-btn', function() {
             }
         });
     }
+});
+
+// Event handler for suggestion buttons
+$('.suggestion-btn').click(function() {
+    var suggestionText = $(this).data('suggestion'); // Get the suggestion text
+    $('#userInput').val(suggestionText); // Set it as the value of the textarea
+    $('#sendButton').click(); // Trigger the click event on the send button
 });
 
 
