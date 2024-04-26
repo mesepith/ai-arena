@@ -78,8 +78,15 @@
 
                 <!-- Input Group for Message Typing Area -->
                 <div class="input-group mb-3">
-                    <textarea class="form-control" id="userInput" placeholder="Type your message here..."></textarea>
-                    <input type="file" id="imageInput" multiple accept="image/*">
+                    <textarea class="form-control user-text-inp" id="userInput" placeholder="Type your message here..."></textarea>
+
+                    <!-- Upload Icon Button -->
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" type="button" id="uploadButton">
+                            <i class="fas fa-upload"></i>
+                        </button>
+                    </div>
+                    <input type="file" id="imageInput" hidden multiple accept="image/*">
                     <input type='hidden' id="sessionInput" value="{{$selectedSessionId}}">
                     <div class="input-group-append send-button-pnt">
                         <button id="sendButton" class="btn btn-primary" type="button">Send</button>

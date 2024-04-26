@@ -1,5 +1,17 @@
 $(document).ready(function() {
 
+    // Trigger file input when upload icon is clicked
+    $('#uploadButton').click(function() {
+        $('#imageInput').trigger('click');
+    });
+
+    // Automatically resize the textarea
+    $('#userInput').on('input', function() {
+        this.style.height = 'auto';
+        // Set the new height only if the scrollHeight is less than or equal to 150px
+        this.style.height = (this.scrollHeight > 150 ? 150 : this.scrollHeight) + 'px';
+    });
+
     var chatBox = $('#chatBox'); // Ensure this is inside document ready to fetch the correct element
     var monitorScrolling = false;
     var aiTyping = false;  // This flag should be true when AI starts typing and false when AI response is completed.

@@ -63,6 +63,7 @@ html, body {
 }
 
 .input-group {
+    position: relative; /* Establish a positioning context for absolute positioning */
     flex-wrap: nowrap; /* Ensures items in the input group are on the same line */
     /* Remove the width and height constraints */
 }
@@ -201,3 +202,21 @@ pre code {
     animation-fill-mode: both;
 }
 /* Animate title of chat start */
+
+/* Style the upload button */
+#uploadButton {
+    position: absolute; /* Position it relative to the parent */
+    bottom: 10px; /* Push 10px up from the bottom */
+    left: 10px; /* Push 10px from the left */
+    z-index: 10; /* Make sure it's above other items */
+}
+
+/* Hide the actual file input, only show the button */
+#imageInput {
+    display: none; /* Hide the actual input */
+}
+
+/* Adjust the textarea padding to make space for the upload icon */
+.user-text-inp{
+    padding-left: 62px; /* Adjust the padding to give space for the upload icon */
+}
