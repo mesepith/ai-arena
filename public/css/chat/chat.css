@@ -13,11 +13,23 @@ html, body {
     border: 1px solid #ccc;
     margin-bottom: 10px;
     padding: 10px;
-    min-height: 300px; /* Change from height to min-height */
     overflow-y: auto;
-    display: flex; /* Add this line */
-    flex-direction: column; /* Add this line */
-    justify-content: center; /* Add this line */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* align content to the top */
+}
+/* Define max-height for mobile */
+@media (max-width: 767px) {
+    .chat-box {
+        max-height: 50vh; /* 50% of the viewport height */
+    }
+}
+
+/* Define max-height for desktop */
+@media (min-width: 768px) {
+    .chat-box {
+        max-height: 80vh; /* 70% of the viewport height */
+    }
 }
 
 .message {
@@ -115,6 +127,8 @@ html, body {
 
     #sidebarMenu {
         display: block;
+        max-height: 85vh; /* 70% of the viewport height on desktop */
+        overflow-y: auto; /* Enable scrolling */
     }
 }
 
@@ -124,7 +138,8 @@ html, body {
         top: 0;
         left: 0;
         width: 75%;
-        height: 100%;
+        max-height: 50vh; /* 50% of the viewport height on mobile */
+        overflow-y: auto; /* Enable scrolling */
         background-color: #f8f9fa;
         z-index: 1010;
         transition: transform 0.3s ease-in-out;
