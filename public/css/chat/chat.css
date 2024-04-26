@@ -38,6 +38,9 @@ html, body {
 
 .user-message {
     text-align: right;
+    background-color: #000000;
+    color: #fff;
+    padding: 15px;
 }
 
 .ai-message {
@@ -47,6 +50,8 @@ html, body {
 .user-message .btn {
     margin-left: 5px;
     margin-bottom: 5px;
+    color:#fff;
+    border: 1px solid #fff;
 }
 
 .ai-message .btn {
