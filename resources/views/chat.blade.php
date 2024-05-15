@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    
 
 </head>
 <body>
@@ -20,9 +21,11 @@
         <div class="model-selection-prnt col-10 col-md-3">
             <div class="model-selection">
                 <select id="modelSelection" class="form-control">
-                    <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
-                    <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
                     <option value="claude-3-opus-20240229">Cloude 3 Opus</option>
+                    <option value="gpt-4o">Open AI GPT-4o</option>
+                    <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
+                    <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
+                    
                     <option value="gpt-4">Open AI GPT-4</option>
                     <option value="claude-3-sonnet-20240229">Cloude 3 Sonnet</option>
                     <option value="claude-3-haiku-20240307">Cloude 3 Haiku</option>
