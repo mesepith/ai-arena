@@ -21,11 +21,11 @@
         <div class="model-selection-prnt col-10 col-md-3">
             <div class="model-selection">
                 <select id="modelSelection" class="form-control">
-                    <option value="claude-3-opus-20240229">Cloude 3 Opus</option>
+                    
                     <option value="gpt-4o">Open AI GPT-4o</option>
                     <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
                     <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
-                    
+                    <option value="claude-3-opus-20240229">Cloude 3 Opus</option>
                     <option value="gpt-4">Open AI GPT-4</option>
                     <option value="claude-3-sonnet-20240229">Cloude 3 Sonnet</option>
                     <option value="claude-3-haiku-20240307">Cloude 3 Haiku</option>
@@ -86,6 +86,13 @@
                     @foreach($chats as $chat)
                         <div class="message-container">
                             <div class="message user-message">
+                                @if($chat->has_image)
+                                    <div class="images-container">
+                                        @foreach($chat->images as $image)
+                                            <img src="{{ $image->image_location }}" alt="User Image" class="chat-image">
+                                        @endforeach
+                                    </div>
+                                @endif
                                 <strong>User:</strong> {{ $chat->user_message }}
                                 <button class="copy-btn btn btn-sm btn-outline-secondary" data-message="{{ $chat->user_message }}">Copy</button>
                             </div>
@@ -102,6 +109,7 @@
 
 
                 <!-- Input Group for Message Typing Area -->
+                <div id="imagePreviews" class="mb-3"></div>
                 <div class="input-group mb-3">
                     <textarea class="form-control user-text-inp" id="userInput" placeholder="Type your message here..."></textarea>
 
@@ -110,6 +118,9 @@
                         <button class="btn btn-outline-secondary" type="button" id="uploadButton">
                             <i class="fas fa-upload"></i>
                         </button>
+                        <div id="uploadLoader" class="spinner-border text-primary" role="status" style="display: none;">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
                     <input type="file" id="imageInput" hidden multiple accept="image/*">
                     <input type='hidden' id="sessionInput" value="{{$selectedSessionId}}">

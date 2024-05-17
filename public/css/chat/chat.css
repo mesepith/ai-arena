@@ -233,6 +233,14 @@ pre code {
     left: 10px; /* Push 10px from the left */
     z-index: 10; /* Make sure it's above other items */
 }
+/* Style the upload loader */
+#uploadLoader {
+    position: absolute;
+    bottom: 16px; /* Align with upload button */
+    left: 10px; /* Align with upload button */
+    z-index: 20; /* Ensure it's above the button */
+    display: none; /* Initially hidden */
+}
 
 /* Hide the actual file input, only show the button */
 #imageInput {
@@ -282,3 +290,9 @@ pre code {
     background-color: rgba(7, 226, 132, 0.632);
 }
 /*suggestion end*/
+.images-container{margin-bottom: 50px;}
+.chat-image {
+    width: 250px;
+    height: 250px;
+    margin: 5px;
+}

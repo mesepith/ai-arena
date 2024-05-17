@@ -1,8 +1,23 @@
 $(document).ready(function() {
 
+    var uploadedFiles = [];
+    var imagePreviews = [];
+
     // Trigger file input when upload icon is clicked
     $('#uploadButton').click(function() {
         $('#imageInput').trigger('click');
+    });
+
+    // Handle file input change event
+    $('#imageInput').change(function() {
+        var files = document.getElementById('imageInput').files;
+        showUploadLoader(); // Show the loader
+        uploadFiles(files, function(uploadedFilesResponse) {
+            uploadedFiles = uploadedFiles.concat(uploadedFilesResponse); // Append new files
+            displayImagePreviews(files); // Display image previews
+            console.log('Files uploaded successfully:', uploadedFiles);
+            hideUploadLoader(); // Hide the loader
+        });
     });
 
     // Automatically resize the textarea
@@ -31,10 +46,9 @@ $(document).ready(function() {
         formData.append('session_id', sessionInput);
         formData.append('model', modelSelected);
 
-        var images = document.getElementById('imageInput').files;
-        for (var i = 0; i < images.length; i++) {
-            formData.append('images[]', images[i]);
-        }
+        uploadedFiles.forEach(function(file) {
+            formData.append('uploaded_files[]', JSON.stringify(file));
+        });
         
 
         // Show the spinnersend-button-pnt
@@ -100,12 +114,16 @@ $(document).ready(function() {
                 // Hide the spinner
                 $('.spinner-border').hide();
                 $('.send-button-pnt').show();
-                },
-                error: function() {
-                    // Hide the spinner in case of error as well
-                    $('.spinner-border').hide();
-                    $('.send-button-pnt').show();
-                }
+
+                $('#imagePreviews').empty(); // Clear image previews
+                uploadedFiles = []; // Clear uploaded files
+                imagePreviews = []; // Clear image previews array
+            },
+            error: function() {
+                // Hide the spinner in case of error as well
+                $('.spinner-border').hide();
+                $('.send-button-pnt').show();
+            }
         });
 
     });
@@ -124,11 +142,28 @@ $(document).ready(function() {
     }
 
     function appendMessage(data, userInput) {
+        console.log('data');
+        console.log(data);
         aiTyping = true;  // AI starts typing
         var sessionInput = $('#sessionInput').val(); 
 
-        // Append user message with 'Copy' button
-        var userMessageElement = $('<div>').addClass('message user-message').html('<strong>User:</strong> ' + userInput);
+        // Create user message element first
+        var userMessageElement = $('<div>').addClass('message user-message');
+
+         // Append images if present
+        if (data.images && data.images.length > 0) {
+            var imagesContainer = $('<div>').addClass('images-container');
+            data.images.forEach(function(imageString) {
+                var image = JSON.parse(imageString);
+                var img = $('<img>').attr('src', image.file_domain + image.file_path).addClass('chat-image');
+                imagesContainer.append(img);
+            });
+            userMessageElement.append(imagesContainer); // Append images container first
+        }
+
+         // Append user message and copy button
+        userMessageElement.append('<strong>User:</strong> ' + userInput);
+
         var userCopyBtn = $('<button>').addClass('copy-btn btn btn-sm btn-outline-secondary').attr('data-message', userInput).text('Copy');
         userMessageElement.append(userCopyBtn);
         chatBox.append(userMessageElement);
@@ -213,7 +248,89 @@ function monitorUserScroll() {
     }
 }
 
-    
+function uploadFiles(files, callback) {
+    var uploadedFiles = [];
+    var uploadCount = 0;
+
+    for (var i = 0; i < files.length; i++) {
+        var formData = new FormData();
+        formData.append('file', files[i]);
+
+        $.ajax({
+            url: 'https://filebox.zahiralam.com/api/upload',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                uploadedFiles.push(response.file);
+                uploadCount++;
+                if (uploadCount === files.length) {
+                    callback(uploadedFiles);
+                }
+            },
+            error: function() {
+                uploadCount++;
+                if (uploadCount === files.length) {
+                    callback(uploadedFiles);
+                }
+            }
+        });
+    }
+}
+
+function displayImagePreviews(files) {
+    var previewContainer = $('#imagePreviews');
+
+    for (var i = 0; i < files.length; i++) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var imgWrapper = $('<div>').css({
+                display: 'inline-block',
+                position: 'relative',
+                margin: '5px'
+            });
+
+            var img = $('<img>').attr('src', e.target.result).css({
+                width: '50px',
+                height: '50px',
+            });
+
+            var removeBtn = $('<span>').html('&times;').css({
+                position: 'absolute',
+                top: '0',
+                right: '0',
+                cursor: 'pointer',
+                background: 'red',
+                color: 'white',
+                borderRadius: '50%',
+                padding: '2px'
+            }).click(function() {
+                var index = imagePreviews.indexOf(imgWrapper);
+                if (index > -1) {
+                    imagePreviews.splice(index, 1);
+                    uploadedFiles.splice(index, 1);
+                    imgWrapper.remove();
+                }
+            });
+
+            imgWrapper.append(img).append(removeBtn);
+            previewContainer.append(imgWrapper);
+            imagePreviews.push(imgWrapper);
+        };
+        reader.readAsDataURL(files[i]);
+    }
+}
+
+function showUploadLoader() {
+    $('#uploadButton').hide();
+    $('#uploadLoader').show();
+}
+
+function hideUploadLoader() {
+    $('#uploadLoader').hide();
+    $('#uploadButton').show();
+} 
     
 
     $('#newChatButton').click(function() {

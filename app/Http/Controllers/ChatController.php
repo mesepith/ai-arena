@@ -47,7 +47,7 @@ class ChatController extends Controller
         } else {
             
             // Fetch messages from the selected session
-            $chats = Chat::where('chat_session_id', $selectedSessionId)->where('status', 1)->get();
+            $chats = Chat::where('chat_session_id', $selectedSessionId)->where('status', 1)->with('images')->get();
             session(['chat_session_id' => $selectedSessionId]);
 
             // Format each AI response
@@ -79,8 +79,10 @@ class ChatController extends Controller
 
         $isNewSession = !Chat::where('chat_session_id', $chatSessionId)->exists();
 
-        $images = $request->file('images', []);
+        // $images = $request->file('images', []);
         $model = $request->input('model', 'gpt-3.5-turbo'); // Default to gpt-3.5-turbo if not provided
+
+        $uploadedFiles = $request->input('uploaded_files', []);
 
         // Your existing code to handle the message and AI response
         $conversationHistory = Chat::where('chat_session_id', $chatSessionId)->where('status', 1)->get()->map(function ($chat) {
@@ -101,39 +103,32 @@ class ChatController extends Controller
         $chat->status = 1;
         $chat->save(); // Save the chat to generate an ID
 
-        // Process images if they are uploaded
-        $imageLocations = [];
-        if (count($images) > 0) {
+       // Include images in the conversation history if present
+        if (count($uploadedFiles) > 0) {
             $chat->has_image = 1;
             $chat->save(); // Update the chat to reflect it has images
-            foreach ($images as $image) {
-                $path = $image->store('chat_images', 'public');
-                $imageLocations[] = $path;
+
+            foreach ($uploadedFiles as $file) {
+                $fileData = json_decode($file, true);
+                $conversationHistory[] = [
+                    'role' => 'user',
+                    'content' => [
+                        'type' => 'image_url',
+                        'image_url' => [
+                            'url' => $fileData['file_domain'] . $fileData['file_path']
+                        ]
+                    ]
+                ];
+
+                // Save file metadata to ChatsImage model
                 ChatsImage::create([
                     'chat_id' => $chat->id,
                     'chat_session_id' => $chatSessionId,
-                    'image_location' => $path,
+                    'image_location' => $fileData['file_domain'] . $fileData['file_path']
                 ]);
             }
         }
-
-        
-
-        // Include images in the conversation history if present
-        foreach ($imageLocations as $location) {
-            $conversationHistory[] = [
-                'role' => 'user',
-                'content' => [
-                    'type' => 'image_url',
-                    'image_url' => [
-                        // 'url' => asset('storage/' . $location)
-                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg'
-                    ]
-                ]
-            ];
-        }
-
-        
+       
         $aiService = $this->getAIService($model);
         $responseBody = $aiService->generateResponse($conversationHistory, $model);
 
@@ -189,7 +184,7 @@ class ChatController extends Controller
         }
         
         // Return the AI response along with the session_id to ensure the frontend knows which session is active
-        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId, 'message_id' => $chat->id, 'chat_title' => $chat_title, 'images' => $imageLocations]);
+        return response()->json(['ai_response' => $aiResponse, 'session_id' => $chatSessionId, 'message_id' => $chat->id, 'chat_title' => $chat_title, 'images' => $uploadedFiles]);
     }
 
     private function getAIService($model)
