@@ -1,5 +1,17 @@
 $(document).ready(function() {
 
+    // Retrieve the stored model from local storage and set the model selection
+    var storedModel = localStorage.getItem('selectedModel');
+    if (storedModel) {
+        $('#modelSelection').val(storedModel);
+    }
+
+    $('#modelSelection').change(function() {
+        // Store the selected model in local storage
+        var selectedModel = $(this).val();
+        localStorage.setItem('selectedModel', selectedModel);
+    });
+
     var uploadedFiles = [];
     var imagePreviews = [];
 
