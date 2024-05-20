@@ -103,8 +103,10 @@ html, body {
     margin-left: 10px;
 }
 
-.spinner-border {
-    margin-left: 10px;
+.chat-container .input-chat-arena div.spinner-send-btn{
+    margin-left: 15px !important;
+    margin-top: 20px;
+    border-radius: 100px !important;
 }
 
 .margin-bottom-20 {

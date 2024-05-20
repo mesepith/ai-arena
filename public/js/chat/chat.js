@@ -69,7 +69,7 @@ $(document).ready(function() {
         
 
         // Show the spinnersend-button-pnt
-        $('.spinner-border').show();
+        $('.spinner-send-btn').show();
         $('.send-button-pnt').hide();
 
         // Send AJAX request using jQuery
@@ -129,7 +129,7 @@ $(document).ready(function() {
                 }
 
                 // Hide the spinner
-                $('.spinner-border').hide();
+                $('.spinner-send-btn').hide();
                 $('.send-button-pnt').show();
 
                 $('#imagePreviews').empty(); // Clear image previews
@@ -138,7 +138,7 @@ $(document).ready(function() {
             },
             error: function() {
                 // Hide the spinner in case of error as well
-                $('.spinner-border').hide();
+                $('.spinner-send-btn').hide();
                 $('.send-button-pnt').show();
             }
         });

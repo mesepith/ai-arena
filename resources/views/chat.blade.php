@@ -94,7 +94,7 @@
             </div>
             <!-- Input Group for Message Typing Area -->
             <div id="imagePreviews" class="mb-3"></div>
-            <div class="input-group mb-3">
+            <div class="input-chat-arena input-group mb-3">
                 <textarea class="form-control user-text-inp" id="userInput" placeholder="Type your message here..."></textarea>
                 <!-- Upload Icon Button -->
                 <div class="input-group-prepend">
@@ -110,7 +110,7 @@
                 <div class="input-group-append send-button-pnt">
                     <button id="sendButton" class="btn btn-primary" type="button">Send</button>
                 </div>
-                <div class="spinner-border text-primary" role="status">
+                <div class="spinner-border spinner-send-btn text-primary" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>
