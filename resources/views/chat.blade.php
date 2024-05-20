@@ -20,8 +20,7 @@
         <!-- Model selection dropdown -->
         <div class="model-selection-prnt col-10 col-md-3">
             <div class="model-selection">
-                <select id="modelSelection" class="form-control">
-                    
+                <select id="modelSelection" class="form-control">             
                     <option value="gpt-4o">Open AI GPT-4o</option>
                     <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
                     <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
