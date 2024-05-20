@@ -1,26 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Chat Application</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ asset('css/chat/chat.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-    
+@extends('layouts.app')
 
-</head>
-<body>
+@push('styles')
+<link href="{{ asset('css/chat/chat.css') }}" rel="stylesheet">
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+<script src="{{ asset('js/chat/chat.js') }}"></script>
+@endpush
+
+@section('content')
 <div class="container-fluid">
-
     <div class="row margin-bottom-20">
         <!-- Model selection dropdown -->
         <div class="model-selection-prnt col-10 col-md-3">
             <div class="model-selection">
-                <select id="modelSelection" class="form-control">             
+                <select id="modelSelection" class="form-control">
                     <option value="gpt-4o">Open AI GPT-4o</option>
                     <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
                     <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
@@ -32,7 +27,6 @@
             </div>
         </div>
         <!-- Burger menu for mobile -->
-
         <div class="col-1 d-md-none text-right">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon">
@@ -42,10 +36,7 @@
             </button>
         </div>
     </div>
-
-
     <div class="row flex-grow-1">
-
         <div class="col-md-3 sidebar collapse d-md-block" id="sidebarMenu">
             <!-- New Chat Button -->
             <button id="newChatButton" class="btn btn-success mt-3">Start New Chat</button>
@@ -56,12 +47,9 @@
                     </a>
                 @endforeach
             </div>
-
-            
         </div>
         <div class="col-md-9 d-flex flex-column chat-container">
             <div class="chat-box" id="chatBox">
-                
                 @if(count($chats) === 0)
                     <!-- Suggestions Box -->
                     <div id="suggestionBox" class="suggestion-box">
@@ -101,52 +89,32 @@
                                 <button class="delete-btn btn btn-sm btn-outline-danger" data-id="{{ $chat->id }}" data-session-id="{{ $selectedSessionId }}">Delete</button>
                             </div>
                         </div>
-                        
                     @endforeach
                 @endif
             </div>
-
-
-                <!-- Input Group for Message Typing Area -->
-                <div id="imagePreviews" class="mb-3"></div>
-                <div class="input-group mb-3">
-                    <textarea class="form-control user-text-inp" id="userInput" placeholder="Type your message here..."></textarea>
-
-                    <!-- Upload Icon Button -->
-                    <div class="input-group-prepend">
-                        <button class="btn btn-outline-secondary" type="button" id="uploadButton">
-                            <i class="fas fa-upload"></i>
-                        </button>
-                        <div id="uploadLoader" class="spinner-border text-primary" role="status" style="display: none;">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </div>
-                    <input type="file" id="imageInput" hidden multiple accept="image/*">
-                    <input type='hidden' id="sessionInput" value="{{$selectedSessionId}}">
-                    <div class="input-group-append send-button-pnt">
-                        <button id="sendButton" class="btn btn-primary" type="button">Send</button>
-                    </div>
-                    <div class="spinner-border text-primary" role="status">
+            <!-- Input Group for Message Typing Area -->
+            <div id="imagePreviews" class="mb-3"></div>
+            <div class="input-group mb-3">
+                <textarea class="form-control user-text-inp" id="userInput" placeholder="Type your message here..."></textarea>
+                <!-- Upload Icon Button -->
+                <div class="input-group-prepend">
+                    <button class="btn btn-outline-secondary" type="button" id="uploadButton">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                    <div id="uploadLoader" class="spinner-border text-primary" role="status" style="display: none;">
                         <span class="sr-only">Loading...</span>
                     </div>
                 </div>
-
-
+                <input type="file" id="imageInput" hidden multiple accept="image/*">
+                <input type='hidden' id="sessionInput" value="{{$selectedSessionId}}">
+                <div class="input-group-append send-button-pnt">
+                    <button id="sendButton" class="btn btn-primary" type="button">Send</button>
+                </div>
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-$(document).ready(function() {
-    $('.navbar-toggler').click(function() {
-        $('.navbar-toggler-icon .fa-bars').toggle();
-        $('.navbar-toggler-icon .fa-times').toggle();
-    });
-});
-</script>
-
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="{{ asset('js/chat/chat.js') }}"></script>
-</body>
-</html>
+@endsection

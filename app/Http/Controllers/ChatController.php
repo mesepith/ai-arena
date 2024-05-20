@@ -8,6 +8,7 @@ use App\Models\ChatsTitle;
 use App\Models\ChatsImage;
 use App\Services\OpenAIService;
 use App\Services\AnthropicService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Parsedown;
 use stdClass;
@@ -24,12 +25,19 @@ class ChatController extends Controller
     public function index(Request $request)
     {
         $selectedSessionId = $request->get('session_id');
+        $user = Auth::user();
+        $guestId = session('guest_id', Str::uuid()->toString());
+        session(['guest_id' => $guestId]);
 
          // Fetch distinct chat session IDs along with the title from chats_title table
-         $sessions = Chat::select('chats.chat_session_id', 'chats_title.title', 
-         Chat::raw('MAX(chats.created_at) as last_message_time'))
+         $sessions = Chat::select('chats.chat_session_id', 'chats_title.title', Chat::raw('MAX(chats.created_at) as last_message_time'))
         ->join('chats_title', 'chats.id', '=', 'chats_title.chat_id')
         ->where('chats.status', 1)
+        ->when($user, function ($query) use ($user) {
+            return $query->where('chats.user_id', $user->id);
+        }, function ($query) use ($guestId) {
+            return $query->where('chats.guest_id', $guestId);
+        })
         ->groupBy('chats.chat_session_id', 'chats_title.title')
         ->orderBy('last_message_time', 'desc')
         ->get();
@@ -47,7 +55,15 @@ class ChatController extends Controller
         } else {
             
             // Fetch messages from the selected session
-            $chats = Chat::where('chat_session_id', $selectedSessionId)->where('status', 1)->with('images')->get();
+            $chats = Chat::where('chat_session_id', $selectedSessionId)
+            ->where('status', 1)
+            ->when($user, function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            }, function ($query) use ($guestId) {
+                return $query->where('guest_id', $guestId);
+            })
+            ->with('images')
+            ->get();
             session(['chat_session_id' => $selectedSessionId]);
 
             // Format each AI response
@@ -83,6 +99,7 @@ class ChatController extends Controller
         $model = $request->input('model', 'gpt-3.5-turbo'); // Default to gpt-3.5-turbo if not provided
 
         $uploadedFiles = $request->input('uploaded_files', []);
+        $guestId = session('guest_id');
 
         // Your existing code to handle the message and AI response
         $conversationHistory = Chat::where('chat_session_id', $chatSessionId)->where('status', 1)->get()->map(function ($chat) {
@@ -101,6 +118,8 @@ class ChatController extends Controller
         $chat->ai_model = $model;
         // $chat->service_by = 'openai'; // Default, adjust based on logic as needed
         $chat->status = 1;
+        $chat->user_id = Auth::id(); // Associate chat with the authenticated user
+        $chat->guest_id = $guestId;  // Associate chat with the guest user
         $chat->save(); // Save the chat to generate an ID
 
        // Include images in the conversation history if present

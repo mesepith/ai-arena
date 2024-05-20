@@ -1,5 +1,10 @@
 $(document).ready(function() {
 
+    $('.navbar-toggler').click(function() {
+        $('.navbar-toggler-icon .fa-bars').toggle();
+        $('.navbar-toggler-icon .fa-times').toggle();
+    });
+
     // Retrieve the stored model from local storage and set the model selection
     var storedModel = localStorage.getItem('selectedModel');
     if (storedModel) {

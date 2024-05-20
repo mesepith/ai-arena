@@ -1,35 +1,46 @@
 html, body {
     height: 100%;
     margin: 0;
-}
-
-.container-fluid {
-    height: 100%;
     display: flex;
     flex-direction: column;
 }
 
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.container-fluid {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.row.flex-grow-1 {
+    flex-grow: 1;
+    display: flex;
+    margin: 0;
+}
+
+.col-md-9.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .chat-box {
+    flex-grow: 1;
     border: 1px solid #ccc;
     margin-bottom: 10px;
     padding: 10px;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* align content to the top */
-}
-/* Define max-height for mobile */
-@media (max-width: 767px) {
-    .chat-box {
-        max-height: 70vh; /* 50% of the viewport height */
-    }
-}
-
-/* Define max-height for desktop */
-@media (min-width: 768px) {
-    .chat-box {
-        max-height: 80vh; /* 70% of the viewport height */
-    }
 }
 
 .message {
@@ -50,7 +61,7 @@ html, body {
 .user-message .btn {
     margin-left: 5px;
     margin-bottom: 5px;
-    color:#fff;
+    color: #fff;
     border: 1px solid #fff;
 }
 
@@ -63,12 +74,6 @@ html, body {
     margin-right: 0;
 }
 
-.row.flex-grow-1 {
-    flex-grow: 1;
-    display: flex;
-    margin: 0;
-}
-
 .sidebar,
 .form-control,
 .btn-primary {
@@ -79,13 +84,13 @@ html, body {
 .spinner-border {
     width: 1.5rem;
     height: 1.5rem;
-    display: none; /* Initially hidden, shown when loading */
+    display: none;
 }
 
 .input-group {
-    position: relative; /* Establish a positioning context for absolute positioning */
-    flex-wrap: nowrap; /* Ensures items in the input group are on the same line */
-    /* Remove the width and height constraints */
+    position: relative;
+    flex-wrap: nowrap;
+    margin-bottom: 10px;
 }
 
 .form-control {
@@ -132,8 +137,8 @@ html, body {
 
     #sidebarMenu {
         display: block;
-        max-height: 85vh; /* 70% of the viewport height on desktop */
-        overflow-y: auto; /* Enable scrolling */
+        max-height: 85vh;
+        overflow-y: auto;
     }
 }
 
@@ -143,8 +148,8 @@ html, body {
         top: 0;
         left: 0;
         width: 75%;
-        max-height: 100vh; /* 50% of the viewport height on mobile */
-        overflow-y: auto; /* Enable scrolling */
+        max-height: 100vh;
+        overflow-y: auto;
         background-color: #f8f9fa;
         z-index: 1010;
         transition: transform 0.3s ease-in-out;
@@ -178,29 +183,15 @@ html, body {
     background-color: rgba(0,0,0,0.1);
 }
 
-/* Add styles for .chat-container */
-.col-md-9.chat-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Aligns children to the start and end */
-    height: 100%;
+.model-selection-prnt {
+    margin-left: 15px;
 }
-
-.chat-box {
-    flex-grow: 1; /* Makes chat box grow to fill available space */
-    /* Other styles remain the same */
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    padding: 10px;
-    overflow-y: auto; /* Changed from scroll to auto */
-}
-.model-selection-prnt{margin-left: 15px;}
 
 pre code {
     display: block;
     overflow-x: auto;
     padding: 0.5em;
-    background-color: #f8f9fa; /* Adjust the color to your preference */
+    background-color: #f8f9fa;
     border: solid 1px #dcdcdc;
     border-radius: 4px;
     font-family: monospace;
@@ -221,62 +212,56 @@ pre code {
 .word-animate {
     display: inline-block;
     animation-name: slideIn;
-    animation-duration: 0.5s; /* Adjust the speed if necessary */
+    animation-duration: 0.5s;
     animation-fill-mode: both;
 }
-/* Animate title of chat start */
 
 /* Style the upload button */
 #uploadButton {
-    position: absolute; /* Position it relative to the parent */
-    bottom: 10px; /* Push 10px up from the bottom */
-    left: 10px; /* Push 10px from the left */
-    z-index: 10; /* Make sure it's above other items */
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 10;
 }
+
 /* Style the upload loader */
 #uploadLoader {
     position: absolute;
-    bottom: 16px; /* Align with upload button */
-    left: 10px; /* Align with upload button */
-    z-index: 20; /* Ensure it's above the button */
-    display: none; /* Initially hidden */
+    bottom: 16px;
+    left: 10px;
+    z-index: 20;
+    display: none;
 }
 
 /* Hide the actual file input, only show the button */
 #imageInput {
-    display: none; /* Hide the actual input */
+    display: none;
 }
 
-/* Adjust the textarea padding to make space for the upload icon */
-.user-text-inp{
-    padding-left: 62px; /* Adjust the padding to give space for the upload icon */
+.user-text-inp {
+    padding-left: 62px;
 }
 
-/*suggestion start*/
-
-/* Style for the "How can I help you today?" text */
+/* suggestion start */
 .suggestion-box > p {
-    font-size: 1.5em; /* Adjust the font size as needed */
-    margin-bottom: 20px; /* Give some space below the text */
+    font-size: 1.5em;
+    margin-bottom: 20px;
 }
 
-/* the suggestions box CSS to ensure it centers the content */
-/* Make sure the .suggestion-box is a flex container */
 .suggestion-box {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100%; /* Set height to fill the container */
+    height: 100%;
     color: #000000;
     text-align: center;
     padding: 20px 0;
 }
 
-/* Ensure the suggestion buttons have enough contrast against the background */
 .suggestion-btn {
     display: block;
-    background: #fff; /* Make buttons darker for contrast */
+    background: #fff;
     border: 1px solid #333;
     color: #333;
     margin: 10px auto;
@@ -289,8 +274,13 @@ pre code {
 .suggestion-btn:hover {
     background-color: rgba(7, 226, 132, 0.632);
 }
-/*suggestion end*/
-.images-container{margin-bottom: 50px;}
+
+/* suggestion end */
+
+.images-container {
+    margin-bottom: 50px;
+}
+
 .chat-image {
     width: 250px;
     height: 250px;
