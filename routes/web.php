@@ -10,7 +10,7 @@ use App\Http\Controllers\ChatController;
 // Route::get('/chat', [ChatController::class, 'index']);
 // Route::post('/chat', [ChatController::class, 'store']);
 
-Route::get('/', [ChatController::class, 'index'])->name('chat.index');
+Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
 Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
 Route::post('/chat/delete/{id}', [ChatController::class, 'delete'])->name('chat.delete');
 
