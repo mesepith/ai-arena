@@ -25,11 +25,10 @@ class AnthropicService implements AIServiceInterface
 
     public function generateResponse($conversation, $model)
     {
-        // echo '<pre>'; print_r($conversation); exit;
         try {
             $formattedMessages = [];
             $userContent = [];
-    
+
             foreach ($conversation as $message) {
                 if ($message['role'] === 'user') {
                     if (isset($message['content']) && is_array($message['content']) && isset($message['content']['type'])) {
@@ -37,18 +36,30 @@ class AnthropicService implements AIServiceInterface
                             // Convert image URL to base64
                             $imageUrl = $message['content']['image_url']['url'];
                             $imageData = file_get_contents($imageUrl);
-                            $base64Image = base64_encode($imageData);
-    
-                            $imageMessage = [
-                                'type' => 'image',
-                                'source' => [
-                                    'type' => 'base64',
-                                    'media_type' => 'image/png',
-                                    'data' => $base64Image
-                                ]
-                            ];
-    
-                            $userContent[] = $imageMessage;
+
+                            // Compress the image
+                            $image = @imagecreatefromstring($imageData);
+                            if ($image !== false) {
+                                ob_start();
+                                imagepng($image, null, 6); // Compression level 6 (0-9)
+                                $compressedImageData = ob_get_clean();
+                                imagedestroy($image);
+
+                                $base64Image = base64_encode($compressedImageData);
+
+                                $imageMessage = [
+                                    'type' => 'image',
+                                    'source' => [
+                                        'type' => 'base64',
+                                        'media_type' => 'image/png',
+                                        'data' => $base64Image
+                                    ]
+                                ];
+
+                                $userContent[] = $imageMessage;
+                            } else {
+                                throw new \Exception('Failed to create image from string');
+                            }
                         }
                     } else {
                         $userContent[] = [
@@ -64,14 +75,14 @@ class AnthropicService implements AIServiceInterface
                         ];
                         $userContent = [];
                     }
-    
+
                     $formattedMessages[] = [
                         'role' => $message['role'],
                         'content' => [['type' => 'text', 'text' => $message['content']]]
                     ];
                 }
             }
-    
+
             if (!empty($userContent)) {
                 $formattedMessages[] = [
                     'role' => 'user',
@@ -79,8 +90,6 @@ class AnthropicService implements AIServiceInterface
                 ];
             }
 
-            // echo '<pre>'; print_r($formattedMessages); exit;
-    
             $response = $this->client->post('/v1/messages', [
                 'headers' => [
                     'x-api-key' => $this->apiKey,
@@ -108,6 +117,14 @@ class AnthropicService implements AIServiceInterface
             ];
         } catch (GuzzleException $e) {
             // Handle API call exception
+            return [
+                'ai_response' => 'An error occurred: ' . $e->getMessage(),
+                'prompt_tokens' => null,
+                'completion_tokens' => null,
+                'total_tokens' => null,
+            ];
+        } catch (\Exception $e) {
+            // Handle general exception
             return [
                 'ai_response' => 'An error occurred: ' . $e->getMessage(),
                 'prompt_tokens' => null,
