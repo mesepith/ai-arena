@@ -25,45 +25,62 @@ class AnthropicService implements AIServiceInterface
 
     public function generateResponse($conversation, $model)
     {
+        // echo '<pre>'; print_r($conversation); exit;
         try {
-            $formattedMessages = [
-                'role' => 'user',
-                'content' => []
-            ];
+            $formattedMessages = [];
+            $userContent = [];
     
             foreach ($conversation as $message) {
-                if (isset($message['content']) && is_array($message['content']) && isset($message['content']['type'])) {
-                    if ($message['content']['type'] === 'image_url') {
-                        // Convert image URL to base64
-                        $imageUrl = $message['content']['image_url']['url'];
-                        $imageData = file_get_contents($imageUrl);
-                        $base64Image = base64_encode($imageData);
+                if ($message['role'] === 'user') {
+                    if (isset($message['content']) && is_array($message['content']) && isset($message['content']['type'])) {
+                        if ($message['content']['type'] === 'image_url') {
+                            // Convert image URL to base64
+                            $imageUrl = $message['content']['image_url']['url'];
+                            $imageData = file_get_contents($imageUrl);
+                            $base64Image = base64_encode($imageData);
     
-                        $imageMessage = [
-                            'type' => 'image',
-                            'source' => [
-                                'type' => 'base64',
-                                'media_type' => 'image/png',
-                                'data' => $base64Image
-                            ]
-                        ];
+                            $imageMessage = [
+                                'type' => 'image',
+                                'source' => [
+                                    'type' => 'base64',
+                                    'media_type' => 'image/png',
+                                    'data' => $base64Image
+                                ]
+                            ];
     
-                        $formattedMessages['content'][] = $imageMessage;
+                            $userContent[] = $imageMessage;
+                        }
                     } else {
-                        $formattedMessages['content'][] = [
+                        $userContent[] = [
                             'type' => 'text',
                             'text' => $message['content']
                         ];
                     }
                 } else {
-                    $formattedMessages['content'][] = [
-                        'type' => 'text',
-                        'text' => $message['content']
+                    if (!empty($userContent)) {
+                        $formattedMessages[] = [
+                            'role' => 'user',
+                            'content' => $userContent
+                        ];
+                        $userContent = [];
+                    }
+    
+                    $formattedMessages[] = [
+                        'role' => $message['role'],
+                        'content' => [['type' => 'text', 'text' => $message['content']]]
                     ];
                 }
             }
-            
-            echo '<pre>'; print_r($formattedMessages); exit;
+    
+            if (!empty($userContent)) {
+                $formattedMessages[] = [
+                    'role' => 'user',
+                    'content' => $userContent
+                ];
+            }
+
+            // echo '<pre>'; print_r($formattedMessages); exit;
+    
             $response = $this->client->post('/v1/messages', [
                 'headers' => [
                     'x-api-key' => $this->apiKey,
@@ -71,7 +88,7 @@ class AnthropicService implements AIServiceInterface
                 'json' => [
                     'model' => $model,
                     'max_tokens' => 1024,
-                    'messages' => [$formattedMessages]
+                    'messages' => $formattedMessages
                 ],
             ]);
 
