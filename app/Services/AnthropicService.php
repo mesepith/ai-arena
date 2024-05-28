@@ -26,14 +26,52 @@ class AnthropicService implements AIServiceInterface
     public function generateResponse($conversation, $model)
     {
         try {
+            $formattedMessages = [
+                'role' => 'user',
+                'content' => []
+            ];
+    
+            foreach ($conversation as $message) {
+                if (isset($message['content']) && is_array($message['content']) && isset($message['content']['type'])) {
+                    if ($message['content']['type'] === 'image_url') {
+                        // Convert image URL to base64
+                        $imageUrl = $message['content']['image_url']['url'];
+                        $imageData = file_get_contents($imageUrl);
+                        $base64Image = base64_encode($imageData);
+    
+                        $imageMessage = [
+                            'type' => 'image',
+                            'source' => [
+                                'type' => 'base64',
+                                'media_type' => 'image/png',
+                                'data' => $base64Image
+                            ]
+                        ];
+    
+                        $formattedMessages['content'][] = $imageMessage;
+                    } else {
+                        $formattedMessages['content'][] = [
+                            'type' => 'text',
+                            'text' => $message['content']
+                        ];
+                    }
+                } else {
+                    $formattedMessages['content'][] = [
+                        'type' => 'text',
+                        'text' => $message['content']
+                    ];
+                }
+            }
+            
+            echo '<pre>'; print_r($formattedMessages); exit;
             $response = $this->client->post('/v1/messages', [
                 'headers' => [
                     'x-api-key' => $this->apiKey,
                 ],
                 'json' => [
                     'model' => $model,
-                    'max_tokens' => 4096,
-                    'messages' => $conversation
+                    'max_tokens' => 1024,
+                    'messages' => [$formattedMessages]
                 ],
             ]);
 
