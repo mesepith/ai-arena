@@ -3,13 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-// Route::get('/chat', [ChatController::class, 'index']);
-// Route::post('/chat', [ChatController::class, 'store']);
-
 Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
 Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
 Route::post('/chat/delete/{id}', [ChatController::class, 'delete'])->name('chat.delete');
