@@ -56,16 +56,16 @@
                         <p>How can I help you today?</p>
                         <div class="row">
                             <div class="col-12 col-md-6">
-                                <button class="suggestion-btn" data-suggestion="Create a morning routine to boost my productivity">Create a morning routine</button>
+                                <button class="suggestion-btn" data-suggestion="Create a morning routine to boost my productivity">How can I improve my website's performance?</button>
                             </div>
                             <div class="col-12 col-md-6">
-                                <button class="suggestion-btn" data-suggestion="Write a thank-you note to my interviewer">Write a thank-you note</button>
+                                <button class="suggestion-btn" data-suggestion="Write a thank-you note to my interviewer">Can you help me learn a new programming language?</button>
                             </div>
                             <div class="col-12 col-md-6">
-                                <button class="suggestion-btn" data-suggestion="Design a creative business card that really stands out">Design a business card</button>
+                                <button class="suggestion-btn" data-suggestion="Design a creative business card that really stands out">How do I organize my daily schedule?</button>
                             </div>
                             <div class="col-12 col-md-6">
-                                <button class="suggestion-btn" data-suggestion="Help me pick an outfit that will look good on camera">Help me pick an outfit</button>
+                                <button class="suggestion-btn" data-suggestion="Help me pick an outfit that will look good on camera">Can you draft a professional email for me?</button>
                             </div>
                         </div>
                     </div>
