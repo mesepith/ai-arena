@@ -7,6 +7,11 @@
 @push('scripts')
 <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
 <script src="{{ asset('js/chat/chat.js') }}"></script>
+<script src="{{ asset('js/chat/chatHelpers.js') }}"></script>
+<script src="{{ asset('js/chat/fileUpload.js') }}"></script>
+<script src="{{ asset('js/chat/scrollBehavior.js') }}"></script>
+<script src="{{ asset('js/chat/sessionManagement.js') }}"></script>
+<script src="{{ asset('js/chat/uiInteractions.js') }}"></script>
 @endpush
 
 @section('content')
