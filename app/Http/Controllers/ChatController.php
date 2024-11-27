@@ -13,6 +13,9 @@ use Illuminate\Support\Str;
 use Parsedown;
 use stdClass;
 
+/**
+ * Chat Controller
+ */
 class ChatController extends Controller
 {
     protected $openAIService;
