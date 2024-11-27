@@ -111,7 +111,7 @@
                         <span class="sr-only">Loading...</span>
                     </div>
                 </div>
-                <input type="file" id="imageInput" hidden multiple accept="image/*">
+                <input type="file" id="imageInput" hidden multiple accept="image/*,.pdf">
                 <input type='hidden' id="sessionInput" value="{{$selectedSessionId}}">
                 <div class="input-group-append send-button-pnt">
                     <button id="sendButton" class="btn btn-primary" type="button">Send</button>

@@ -28,37 +28,54 @@ class AnthropicService implements AIServiceInterface
         try {
             $formattedMessages = [];
             $userContent = [];
-
+            $httpClient = new Client(); // Guzzle HTTP client for downloading files
+    
             foreach ($conversation as $message) {
                 if ($message['role'] === 'user') {
                     if (isset($message['content']) && is_array($message['content']) && isset($message['content']['type'])) {
                         if ($message['content']['type'] === 'image_url') {
-                            // Convert image URL to base64
-                            $imageUrl = $message['content']['image_url']['url'];
-                            $imageData = file_get_contents($imageUrl);
-
-                            // Compress the image
-                            $image = @imagecreatefromstring($imageData);
-                            if ($image !== false) {
-                                ob_start();
-                                imagepng($image, null, 6); // Compression level 6 (0-9)
-                                $compressedImageData = ob_get_clean();
-                                imagedestroy($image);
-
-                                $base64Image = base64_encode($compressedImageData);
-
-                                $imageMessage = [
-                                    'type' => 'image',
-                                    'source' => [
-                                        'type' => 'base64',
-                                        'media_type' => 'image/png',
-                                        'data' => $base64Image
-                                    ]
-                                ];
-
-                                $userContent[] = $imageMessage;
-                            } else {
-                                throw new \Exception('Failed to create image from string');
+                            $fileUrl = str_replace(' ', '%20', $message['content']['image_url']['url']); // Ensure URL encoding
+    
+                            try {
+                                $response = $httpClient->get($fileUrl, [
+                                    'headers' => [
+                                        'User-Agent' => 'Mozilla/5.0 (compatible; AnthropicService/1.0)',
+                                    ],
+                                ]);
+                                $fileData = $response->getBody()->getContents();
+                                if (!$fileData) {
+                                    throw new \Exception("Failed to fetch file data from URL: $fileUrl");
+                                }
+    
+                                // Determine if the file is an image or PDF
+                                $fileType = $response->getHeaderLine('Content-Type');
+                                if (strpos($fileType, 'image/') !== false) {
+                                    // Handle image
+                                    $base64Image = base64_encode($fileData);
+                                    $userContent[] = [
+                                        'type' => 'image',
+                                        'source' => [
+                                            'type' => 'base64',
+                                            'media_type' => $fileType, // e.g., image/png or image/jpeg
+                                            'data' => $base64Image
+                                        ]
+                                    ];
+                                } elseif ($fileType === 'application/pdf') {
+                                    // Handle PDF
+                                    $base64Pdf = base64_encode($fileData);
+                                    $userContent[] = [
+                                        'type' => 'document',
+                                        'source' => [
+                                            'type' => 'base64',
+                                            'media_type' => $fileType,
+                                            'data' => $base64Pdf
+                                        ]
+                                    ];
+                                } else {
+                                    throw new \Exception("Unsupported file type: $fileType");
+                                }
+                            } catch (\Exception $e) {
+                                throw new \Exception("Error downloading file: " . $e->getMessage());
                             }
                         }
                     } else {
@@ -75,24 +92,27 @@ class AnthropicService implements AIServiceInterface
                         ];
                         $userContent = [];
                     }
-
+    
                     $formattedMessages[] = [
                         'role' => $message['role'],
                         'content' => [['type' => 'text', 'text' => $message['content']]]
                     ];
                 }
             }
-
+    
             if (!empty($userContent)) {
                 $formattedMessages[] = [
                     'role' => 'user',
                     'content' => $userContent
                 ];
             }
-
+    
+            // Send API Request
             $response = $this->client->post('/v1/messages', [
                 'headers' => [
                     'x-api-key' => $this->apiKey,
+                    'anthropic-version' => '2023-06-01',
+                    'anthropic-beta' => 'pdfs-2024-09-25'
                 ],
                 'json' => [
                     'model' => $model,
@@ -100,23 +120,17 @@ class AnthropicService implements AIServiceInterface
                     'messages' => $formattedMessages
                 ],
             ]);
-
+    
             $responseBody = json_decode($response->getBody(), true);
             $aiContent = $responseBody['content'][0]['text'] ?? 'Sorry, I could not generate a response.';
-
-            // Extract token counts from the response if available
-            $inputTokens = $responseBody['usage']['input_tokens'] ?? null;
-            $outputTokens = $responseBody['usage']['output_tokens'] ?? null;
-            $totalTokens = $inputTokens + $outputTokens;
-
+    
             return [
                 'ai_response' => $aiContent,
-                'prompt_tokens' => $inputTokens,
-                'completion_tokens' => $outputTokens,
-                'total_tokens' => $totalTokens,
+                'prompt_tokens' => $responseBody['usage']['input_tokens'] ?? null,
+                'completion_tokens' => $responseBody['usage']['output_tokens'] ?? null,
+                'total_tokens' => ($responseBody['usage']['input_tokens'] ?? 0) + ($responseBody['usage']['output_tokens'] ?? 0),
             ];
         } catch (GuzzleException $e) {
-            // Handle API call exception
             return [
                 'ai_response' => 'An error occurred: ' . $e->getMessage(),
                 'prompt_tokens' => null,
@@ -124,7 +138,6 @@ class AnthropicService implements AIServiceInterface
                 'total_tokens' => null,
             ];
         } catch (\Exception $e) {
-            // Handle general exception
             return [
                 'ai_response' => 'An error occurred: ' . $e->getMessage(),
                 'prompt_tokens' => null,
@@ -133,4 +146,5 @@ class AnthropicService implements AIServiceInterface
             ];
         }
     }
+    
 }
