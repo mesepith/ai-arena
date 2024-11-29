@@ -99,7 +99,7 @@ class ChatController extends Controller
         $isNewSession = !Chat::where('chat_session_id', $chatSessionId)->exists();
 
         // $images = $request->file('images', []);
-        $model = $request->input('model', 'gpt-3.5-turbo'); // Default to gpt-3.5-turbo if not provided
+        $model = $request->input('model', 'gpt-4o-mini'); // Default to gpt-3.5-turbo if not provided
 
         $uploadedFiles = $request->input('uploaded_files', []);
         $guestId = session('guest_id');

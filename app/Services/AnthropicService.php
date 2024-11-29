@@ -116,7 +116,7 @@ class AnthropicService implements AIServiceInterface
                 ],
                 'json' => [
                     'model' => $model,
-                    'max_tokens' => 1024,
+                    'max_tokens' => 4096,
                     'messages' => $formattedMessages
                 ],
             ]);
