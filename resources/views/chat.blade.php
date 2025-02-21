@@ -25,7 +25,8 @@
                     <option value="o1-preview">Open AI o1 Preview</option>
                     <option value="o1-mini">Open AI o1 Mini</option>
                     <option value="gpt-4o">Open AI GPT-4o</option>
-                    <option value="claude-3-5-sonnet-20240620">Cloude 3.5 Sonnet</option>
+                    <option value="claude-3-5-sonnet-20241022">Cloude 3.5 Sonnet</option>
+                    <option value="claude-3-5-haiku-20241022">Cloude 3.5 Haiku</option>
                     <option value="gpt-4-turbo">Open AI GPT-4 Turbo</option>
                     <option value="gpt-3.5-turbo">Open AI GPT-3.5-turbo</option>
                     <option value="claude-3-opus-20240229">Cloude 3 Opus</option>
